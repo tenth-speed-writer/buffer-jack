@@ -1,3 +1,3 @@
-import inputs
-
 __all__ = ["inputs"]
+
+from src import inputs

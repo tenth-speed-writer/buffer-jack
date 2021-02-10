@@ -33,23 +33,25 @@ def main() -> None:
 
             for event in tcod.event.wait():
                 context.convert_event(event)
-                print("Event: {}".format(str(event)))
+                #79print("Event: {}".format(str(event)))
 
                 if event.type == "QUIT":
                     # Nuke it from the OS
                     raise SystemExit()
 
-
                 if event.type == "WINDOWRESIZED":
                     pass
 
                 if event.type == "KEYDOWN":
-                    print(event.sym is tcod.event.K_f)
+                    # Check if it's a movement key.
+                    # If the player isn't in a menu, move.
+                    if src.inputs.is_movement_key(event):
+                        delta = src.inputs.get_position_delta(event)
+                        print("{}, {}".format(str(delta.dx),
+                                              str(delta.dy)))
+                    else:
+                        pass
 
-
-
-# tcod.console_set_custom_font(TILESET, tcod.FONT_LAYOUT_CP437)
-# tcod.console_init_root(SCREEN_W, SCREEN_H, "Buffer Jack")
 
 if __name__ == "__main__":
     main()
