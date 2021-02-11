@@ -27,13 +27,14 @@ def main() -> None:
             console = context.new_console(order="F")
 
             # Magic for a given console goes between here and context.present
-
+            console.print(5, 3, "Let's keep it quiet, eh?")
             context.present(console=console,
-                            integer_scaling=True)
+                            integer_scaling=False)
 
             for event in tcod.event.wait():
                 context.convert_event(event)
-                #79print("Event: {}".format(str(event)))
+                console.print(5, 4, str(event))
+                context.present(console)
 
                 if event.type == "QUIT":
                     # Nuke it from the OS
