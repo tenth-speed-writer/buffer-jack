@@ -59,7 +59,7 @@ class Entity:
 
     def move_to(self, x, y):
         """Moves the entity to a specified location on the playfield."""
-        #TODO: Test if it -actually can- move where it wants to go.
+        #TODO: Test if it -actually can- move where it wants to go, and if not, raise a CannotMoveException
         old_cell = self.cell
         new_cell = self.playfield.get_cell(x, y)
 

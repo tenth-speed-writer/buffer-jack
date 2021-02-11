@@ -30,6 +30,11 @@ class Cell:
             # If there's nothing here, return an empty string."
             return tuple("")
 
+    @property
+    def position(self) -> Tuple[int, int]:
+        """Returns own position as (x, y)."""
+        return self._x, self._y
+
     def add_entity(self, entity: Entity) -> None:
         """Appends a new entity to this cell's contents, assuming it's not already there."""
         if not entity in self.contents:
@@ -46,16 +51,12 @@ class Cell:
                                                                                           str(self._x),
                                                                                           str(self._y)))
 
-    @property
-    def position(self) -> Tuple[int, int]:
-        """Returns own position as (x, y)."""
-        return self._x, self._y
 
 class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
-                 contents: Optional[Iterable[Tuple[int, int, Entity]]]):
+                 contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
         """
         Initialize a new PlayField of given dimensions, optionally with an iterable of initial entities.
 
@@ -78,6 +79,7 @@ class PlayField:
 
     @property
     def shape(self) -> Tuple[int, int]:
+        """Returns the shape of this playfield in terms of (width, height)"""
         return self.width, self.height
 
     def __str__(self) -> str:
@@ -91,5 +93,19 @@ class PlayField:
         else:
             raise ValueError("Location (x:{}, y:{}) is out of bounds!".format(str(x), str(y)))
 
-foo = PlayField(40, 30)
+    def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> Iterable[Cell]:
+        """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
+        if cells:
+            # If specified, return the cells corresponding to the given (x, y) tuples
+            return [self.get_cell(x, y) for x, y in cells]
+        else:
+            # Return all cells in this PlayField
+            c = []
+            for row in self._field:
+                for value in row:
+                    c += value
+            return c
+
+
+#foo = PlayField(40, 30)
 print(foo)
