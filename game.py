@@ -6,15 +6,30 @@ WIDTH, HEIGHT = 720, 480
 TILESET_SIZE = 16
 FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
 
+tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
+                                      charmap=tcod.tileset.CHARMAP_CP437)
+
+
+# def test_menu(context,
+#               height: int = 300,
+#               width: int = 400):
+#     c = context.new_console(order="F")
+#     close_menu = False
+#     while not close_menu:
+#         c.print(5, 1, "This is definitely where the menu goes.")
+#         context.present(c)
+#
+#         for event in tcod.event.get():
+#             context.convert_event(event)
+#             if event.type == "KEYDOWN" and event.sym == tcod.event.K_ESCAPE:
+#                 close_menu = True
+
 
 # the -> syntax gives a return type, i think?
 def main() -> None:
-    tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
-                                          tcod.tileset.CHARMAP_CP437)
-
-    console = tcod.Console(width=floor(WIDTH/TILESET_SIZE),
-                           height=floor(HEIGHT/TILESET_SIZE),
-                           order="F")
+    # console = tcod.Console(width=floor(WIDTH/TILESET_SIZE),
+    #                        height=floor(HEIGHT/TILESET_SIZE),
+    #                        order="F")
 
     with tcod.context.new(width=WIDTH,
                           height=HEIGHT,
@@ -50,6 +65,8 @@ def main() -> None:
                         delta = src.inputs.get_position_delta(event)
                         print("{}, {}".format(str(delta.dx),
                                               str(delta.dy)))
+                    # elif event.sym == tcod.event.K_i:
+                    #     test_menu(context=context)
                     else:
                         pass
 
