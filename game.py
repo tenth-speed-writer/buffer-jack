@@ -61,6 +61,7 @@ def main() -> None:
                 if event.type == "KEYDOWN":
                     # Check if it's a movement key.
                     # If the player isn't in a menu, move.
+                    print(event)
                     if src.inputs.is_movement_key(event):
                         delta = src.inputs.get_position_delta(event)
                         print("{}, {}".format(str(delta.dx),
@@ -68,7 +69,7 @@ def main() -> None:
                     # elif event.sym == tcod.event.K_i:
                     #     test_menu(context=context)
                     else:
-                        pass
+                        continue
 
 
 if __name__ == "__main__":

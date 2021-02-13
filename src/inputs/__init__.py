@@ -16,7 +16,11 @@ def is_movement_key(event: tcod.event.Event) -> bool:
               tcod.event.K_KP_6,
               tcod.event.K_KP_7,
               tcod.event.K_KP_8,
-              tcod.event.K_KP_9]
+              tcod.event.K_KP_9,
+              tcod.event.K_UP,
+              tcod.event.K_LEFT,
+              tcod.event.K_RIGHT,
+              tcod.event.K_DOWN]
     if event.type == "KEYDOWN" and event.sym in events:
         return True
     else:
