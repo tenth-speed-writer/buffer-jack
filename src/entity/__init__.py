@@ -21,9 +21,9 @@ class Entity:
     def __init__(self,
                  size: int,
                  sigil: str,
-                 name: Optional[str],
-                 parent_cell: Optional[object],
-                 parent_playfield: Optional[object],
+                 name: Optional[str] = None,
+                 parent_cell: Optional[object] = None,
+                 parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
                  sigil_priority: int = 3):
         self._sigil = sigil
@@ -94,7 +94,6 @@ class Entity:
         else:
             return self._parent_cell.position()
 
-
     @property
     def sigil(self):
         """Returns the class's sigil and that sigil's priority.
@@ -109,11 +108,3 @@ class Entity:
     @property
     def name(self) -> str:
         return str(self._name)
-
-
-class ToyBoi(Entity):
-    def __init__(self):
-        name = "Toy Boi the delightful!"
-        super().__init__(size=3,
-                         sigil="@",
-                         name=name,)
