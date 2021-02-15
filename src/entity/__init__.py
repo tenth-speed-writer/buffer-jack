@@ -40,7 +40,8 @@ class Entity:
         """Returns the cell in which the entity exists.
         Raises a NotOnPlayFieldException if parent playfield and cell aren't both defined."""
         if self._parent_cell and not self._parent_playfield:
-            raise NotOnPlayFieldException("Entity {} has a parent Cell, but not a parent PlayField.".format(str(self._name)))
+            raise NotOnPlayFieldException("Entity {} has a parent Cell, but not a parent PlayField."
+                                          .format(str(self._name)))
         elif self._parent_cell:
             return self._parent_cell
         else:
@@ -51,7 +52,8 @@ class Entity:
         """Returns the PlayField in which the entity exists.
         Raises a NotOnPlayFieldException if parent playfield and cell aren't both defined."""
         if self._parent_playfield and not self._parent_cell:
-            raise NotOnPlayFieldException("Entity {} has a parent PlayField, but not a parent Cell.".format(str(self._name)))
+            raise NotOnPlayFieldException("Entity {} has a parent PlayField, but not a parent Cell."
+                                          .format(str(self._name)))
         elif self._parent_playfield:
             return self._parent_playfield
         else:

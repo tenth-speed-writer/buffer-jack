@@ -3,7 +3,7 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-from typing import Optional, List, Tuple, Type
+from typing import Optional, List, Tuple
 
 
 class Cell:
@@ -145,8 +145,6 @@ class PlayField:
 #         super().__init__(size=3,
 #                          sigil="@",
 #                          name=name)
-
-
 
 # print(len(foo._field))
 # print(foo._field[0][0].__dir__())
