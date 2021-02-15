@@ -77,14 +77,6 @@ class Entity:
         self.playfield = new_cell.playfield
         self._change_cell(new_cell)
 
-    def move_to(self, x, y):
-        """Get Cell x, y from the entity's playfield, then attempt to move the entity there."""
-
-        # Find the cell in question and reassign it, firing the
-        # above-written setter to handle both pf and cell changes
-        new_cell = self.playfield.get_cell(x, y)
-        self.cell = new_cell
-
     @property
     def position(self):
         if not self._parent_playfield:
@@ -108,3 +100,18 @@ class Entity:
     @property
     def name(self) -> str:
         return str(self._name)
+
+    def move_to(self, x, y) -> None:
+        """Get Cell x, y from the entity's playfield, then attempt to move the entity there.
+        The entity must already have a playfield in which it exists; otherwise, use introduce_at(x, y, playfield)"""
+
+        # Find the cell in question and reassign it, firing the
+        # above-written setter to handle both pf and cell changes
+        new_cell = self.playfield.get_cell(x, y)
+        self.cell = new_cell
+
+    def introduce_at(self, x, y, playfield) -> None:
+        """As per move_to, but assumes the Entity doesn't already have a playfield.
+        Use when spawning an entity on the playfield for the first time."""
+        self.playfield = playfield
+        self.cell = self.playfield.get_cell(x=x, y=y)
