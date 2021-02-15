@@ -65,15 +65,25 @@ class Entity:
         assert hasattr(pf, "_field")
         self._parent_playfield = pf
 
+    def _change_cell(self, c) -> None:
+        # TODO: Consider cells having a "can_accept" @property that we check here
+        self._parent_cell = c
+
+    @cell.setter
+    def cell(self, new_cell) -> None:
+        """Change this entity's cell, including changing its playfield if necessary.
+        This generally corresponds to the entity being moved or placed."""
+
+        self.playfield = new_cell.playfield
+        self._change_cell(new_cell)
+
     def move_to(self, x, y):
-        """Moves the entity to a specified location on the playfield."""
-        #TODO: Test if it -actually can- move where it wants to go, and if not, raise a CannotMoveException
+        """Get Cell x, y from the entity's playfield, then attempt to move the entity there."""
 
-        old_cell = self.cell
+        # Find the cell in question and reassign it, firing the
+        # above-written setter to handle both pf and cell changes
         new_cell = self.playfield.get_cell(x, y)
-
-        new_cell.add_entity(self)
-        old_cell.remove_entity(self)
+        self.cell = new_cell
 
     @property
     def position(self):
@@ -83,6 +93,7 @@ class Entity:
             raise NotOnPlayFieldException("Entity {} does not have a parent Cell.".format(str(self._name)))
         else:
             return self._parent_cell.position()
+
 
     @property
     def sigil(self):
