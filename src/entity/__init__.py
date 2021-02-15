@@ -57,9 +57,18 @@ class Entity:
         else:
             raise NotOnPlayFieldException("Entity {} does not have a parent PlayField.".format(str(self._name)))
 
+    @playfield.setter
+    def playfield(self, pf):
+        """Sets the object's new playfield, assuming it passes some ducktype testing."""
+
+        # Simple test since we're limited by a circular import reference and can't use true type hinting. :(
+        assert hasattr(pf, "_field")
+        self._parent_playfield = pf
+
     def move_to(self, x, y):
         """Moves the entity to a specified location on the playfield."""
         #TODO: Test if it -actually can- move where it wants to go, and if not, raise a CannotMoveException
+
         old_cell = self.cell
         new_cell = self.playfield.get_cell(x, y)
 
@@ -89,3 +98,11 @@ class Entity:
     @property
     def name(self) -> str:
         return str(self._name)
+
+
+class ToyBoi(Entity):
+    def __init__(self):
+        name = "Toy Boi the delightful!"
+        super().__init__(size=3,
+                         sigil="@",
+                         name=name,)
