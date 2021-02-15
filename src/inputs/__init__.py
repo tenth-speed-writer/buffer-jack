@@ -8,7 +8,7 @@ def is_movement_key(event: tcod.event.Event) -> bool:
     """Returns true IIF event is a keydown event whose sym corresponds to a movement key."""
 
     # Up, down, left, right, and any numpad key except 5.
-    # TODO: include the old nethack style keys
+    # TODO: include the old vim style keys
     events = [tcod.event.K_KP_1,
               tcod.event.K_KP_2,
               tcod.event.K_KP_3,
@@ -28,6 +28,8 @@ def is_movement_key(event: tcod.event.Event) -> bool:
 
 
 def get_position_delta(event: tcod.event.Event) -> PositionDelta:
+    """Returns a PositionDelta (a .dx and a .dy) if given a valid movement key event, else raises a ValueError."""
+
     # Numpad
     if event.sym == tcod.event.K_KP_1:
         return PositionDelta(dx=-1, dy=-1)
