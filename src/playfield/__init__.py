@@ -46,6 +46,8 @@ class Cell:
         """Appends a new entity to this cell's contents, assuming it's not already there."""
         if not entity in self.contents:
             self.contents = self.contents + entity
+            x, y = self.position
+            entity.move_to(x, y)
         else:
             print("Warning: tried to move Entity {} into a cell that it's already in.".format(entity.name))
 
@@ -89,7 +91,9 @@ class PlayField:
             # Then append it to the field.
             self._field += [row]
 
-        # Create each entity in contents
+        for x, y, e in contents:
+            # Add each provided entity (e) into its specified location
+            self.get_cell(x, y).add_entity(entity=e)
 
     @property
     def shape(self) -> Tuple[int, int]:
@@ -121,7 +125,20 @@ class PlayField:
                     c += value
             return c
 
+    def has_cell(self, cell: Cell) -> bool:
+        """Skims the _field arrays for any instance of the specified Cell.
+        :param cell An instance of playfield.Cell"""
+        def row_has_cell(r) -> bool:
+            return cell in r
+
+        return True in [row_has_cell(row) for row in self._field]
+
 
 foo = PlayField(40, 30)
 print(len(foo._field))
-print(len(foo._field[0]))
+print(foo._field[0][0].__dir__())
+print(foo._field[5][8].position)
+print(foo._field[5][0].sigils)
+
+print(foo.has_cell(foo._field[4][2]))
+print(foo.has_cell(Cell(PlayField(5,5), 2, 3)))
