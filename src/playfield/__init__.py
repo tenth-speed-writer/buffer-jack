@@ -1,7 +1,7 @@
 __all__ = ["Cell", "PlayField"]
 
 # Bless type hinting.
-from collections import Iterable
+from collections.abc import Iterable
 from src.entity import Entity
 from typing import Optional, List, Tuple
 
@@ -9,25 +9,32 @@ from typing import Optional, List, Tuple
 class Cell:
     """A collection of entities that exist in the same place on the PlayField."""
     def __init__(self, parent, x: int, y: int,
-                 contents: Optional[Iterable[Entity]] = ()):
+                 contents: Optional[Iterable[Entity]] = tuple()):
         self._parent = parent
         self._x = x
         self._y = y
 
+        # Cast contents to a list regardless of their type
         self.contents = [c for c in contents]
 
     @property
     def sigils(self):
         """Returns an iterable of the highest-priority sigil or sigils in this cell."""
 
+        # DEVNOTE: The idea is to cycle through top sigils for a given rendered tile on the map
         if len(self.contents) > 0:
             # Get the highest sigil priority from all (sigil, priority)
             # tuples, then return a list of sigils with that priority.
             sigils = [entity.sigil() for entity in self.contents]
             max_value = max([s[1] for s in sigils])
-            top_sigils = [s[0] for s in sigils]
+            top_sigils = [s[0]
+                          for s in sigils
+                          if s[1] == max_value]
+
+            return [s for s in top_sigils]
+
         else:
-            # If there's nothing here, return an empty string."
+            # If there's nothing here, return an iterable with an empty string."
             return tuple("")
 
     @property
@@ -70,10 +77,17 @@ class PlayField:
         # Iteratively initiate the PlayField with empty Cells,
         # populating the _field variable by the row.
         self._field: List[List[Cell]] = []
+
         for y in range(0, self.height):
-            self._field[y] = []
-            for x in range(0, self.width):
-                self._field[y][x] = Cell(self, x, y)
+            # Create a row which includes one cell, in order,
+            # for every tile between 0 and the opposite map edge.
+            row = [Cell(x=x,
+                        y=y,
+                        parent=self)
+                   for x in range(0, self.width)]
+
+            # Then append it to the field.
+            self._field += [row]
 
         # Create each entity in contents
 
@@ -83,6 +97,7 @@ class PlayField:
         return self.width, self.height
 
     def __str__(self) -> str:
+        """When printed as a string, the playfield will <> itself and state its shape."""
         return "<PlayField - Shape: {}, {}>".format(str(self.width),
                                                     str(self.height))
 
@@ -107,5 +122,6 @@ class PlayField:
             return c
 
 
-#foo = PlayField(40, 30)
-print(foo)
+foo = PlayField(40, 30)
+print(len(foo._field))
+print(len(foo._field[0]))
