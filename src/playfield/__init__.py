@@ -43,11 +43,12 @@ class Cell:
         return self._x, self._y
 
     def add_entity(self, entity: Entity) -> None:
-        """Appends a new entity to this cell's contents, assuming it's not already there."""
-        if not entity in self.contents:
-            self.contents = self.contents + entity
+        """Appends a new entity to this cell's contents, assuming it's not
+        already there, and pairs that entity with this cell."""
+        if entity not in self.contents:
+            self.contents.append(entity)
             x, y = self.position
-            entity.move_to(x, y)
+            entity.introduce_at(x, y, self.playfield)
         else:
             print("Warning: tried to move Entity {} into a cell that it's already in.".format(entity.name))
 
@@ -116,7 +117,7 @@ class PlayField:
         else:
             raise ValueError("Location (x:{}, y:{}) is out of bounds!".format(str(x), str(y)))
 
-    def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> Iterable[Cell]:
+    def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
         if cells:
             # If specified, return the cells corresponding to the given (x, y) tuples
@@ -138,11 +139,23 @@ class PlayField:
         return True in [row_has_cell(row) for row in self._field]
 
 
-foo = PlayField(40, 30)
-print(len(foo._field))
-print(foo._field[0][0].__dir__())
-print(foo._field[5][8].position)
-print(foo._field[5][0].sigils)
+############
+# class ToyBoi(Entity):
+#     def __init__(self, name: str = "Toy Boi the delightful!"):
+#         super().__init__(size=3,
+#                          sigil="@",
+#                          name=name)
 
-print(foo.has_cell(foo._field[4][2]))
-print(foo.has_cell(Cell(PlayField(5,5), 2, 3)))
+
+
+# print(len(foo._field))
+# print(foo._field[0][0].__dir__())
+# print(foo._field[5][8].position)
+# print(foo._field[5][0].sigils)
+# print(foo.has_cell(foo._field[4][2]))
+# print(foo.has_cell(Cell(PlayField(5,5), 2, 3)))
+# boi = ToyBoi()
+# foo = PlayField(40, 30, contents=((2, 3, boi),))
+# print(str(boi.position))
+# foo.get_cell(2, 3).contents[0].move_to(4, 6)
+# print(boi.position)
