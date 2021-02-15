@@ -3,7 +3,7 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Type
 
 
 class Cell:
@@ -59,6 +59,10 @@ class Cell:
             print("Can't remove entity {} from cell x:{}, y:{} as it isn't there!".format(entity.name,
                                                                                           str(self._x),
                                                                                           str(self._y)))
+
+    @property
+    def playfield(self):
+        return self._parent
 
 
 class PlayField:
