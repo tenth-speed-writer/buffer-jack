@@ -84,7 +84,7 @@ class Entity:
         elif not self._parent_cell:
             raise NotOnPlayFieldException("Entity {} does not have a parent Cell.".format(str(self._name)))
         else:
-            return self._parent_cell.position()
+            return self._parent_cell.position
 
     @property
     def sigil(self):
@@ -114,4 +114,4 @@ class Entity:
         """As per move_to, but assumes the Entity doesn't already have a playfield.
         Use when spawning an entity on the playfield for the first time."""
         self.playfield = playfield
-        self.cell = self.playfield.get_cell(x=x, y=y)
+        self.cell = playfield.get_cell(x=x, y=y)
