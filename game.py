@@ -1,6 +1,5 @@
 import tcod
 import src
-from math import floor
 
 WIDTH, HEIGHT = 720, 480
 TILESET_SIZE = 16
@@ -27,10 +26,6 @@ tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
 
 # the -> syntax gives a return type, i think?
 def main() -> None:
-    # console = tcod.Console(width=floor(WIDTH/TILESET_SIZE),
-    #                        height=floor(HEIGHT/TILESET_SIZE),
-    #                        order="F")
-
     with tcod.context.new(width=WIDTH,
                           height=HEIGHT,
                           tileset=tileset,
