@@ -96,7 +96,7 @@ class Entity:
         """Returns the class's sigil and that sigil's priority.
         A higher priority means this sigil will be rendered over the others.
         Level 3 is mobs and terrain, level 2 is stuff on the floor, level 4 is obscuring stuff like smoke."""
-        return self._sigil, self._sigil_priority
+        return self._sigil
 
     @property
     def size(self) -> int:
