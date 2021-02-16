@@ -30,8 +30,22 @@ class Mobile(Entity):
                          sigil_priority=sigil_priority)
         self._base_move_cost = base_move_cost
 
+        # DEVNOTE: When entities spawn, they'll be on their base cooldown.
+        self._action_cooldown = base_move_cost
+
     @property
-    def move_cost(self):
+    def move_cost(self) -> int:
         """Returns number of ticks it costs move a tile on the map.
         Overwrite this method to apply stat logic and buffs/maluses."""
         return self._base_move_cost
+
+    @property
+    def cooldown(self):
+        """Getter for own action cooldown remaining. Probably don't override... probably."""
+        return self._action_cooldown
+
+    def tick(self) -> None:
+        """What happens to this entity every tick.
+        Override as necessary, but be sure to decrement the action cooldown. :)"""
+        if self._action_cooldown > 0:
+            self._action_cooldown -= 1
