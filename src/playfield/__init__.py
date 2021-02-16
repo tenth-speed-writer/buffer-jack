@@ -160,20 +160,21 @@ class PlayField:
 # print(boi.position)
 
 
-bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),
-                                  (0, 1, entities.Barricade()),
-                                  (0, 2, entities.Barricade()),
-                                  (1, 0, entities.Barricade()),
-                                  (1, 2, entities.Barricade()),
-                                  (2, 0, entities.Barricade()),
-                                  (2, 2, entities.Barricade()),
-                                  (3, 0, entities.Barricade()),
-                                  (3, 2, entities.Barricade()),
-                                  (3, 1, entities.Barricade()),
-                                  (4, 0, entities.Barricade()),
-                                  (4, 1, entities.Barricade()),
-                                  (4, 2, entities.Barricade())
-                                 ))
-
-
-print(bar.get_cell(x=1, y=0).sigils)
+# bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),
+#                                   (0, 1, entities.Barricade()),
+#                                   (0, 2, entities.Barricade()),
+#                                   (1, 0, entities.Barricade()),
+#                                   (1, 2, entities.Barricade()),
+#                                   (2, 0, entities.Barricade()),
+#                                   (2, 2, entities.Barricade()),
+#                                   (3, 0, entities.Barricade()),
+#                                   (3, 2, entities.Barricade()),
+#                                   (3, 1, entities.Barricade()),
+#                                   (4, 0, entities.Barricade()),
+#                                   (4, 1, entities.Barricade()),
+#                                   (4, 1, entities.Barricade()),
+#                                   (4, 2, entities.Barricade())
+#                                   ))
+#
+#
+# print(bar.get_cell(x=4, y=1).sigils)
