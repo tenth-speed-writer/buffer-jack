@@ -1,13 +1,14 @@
 import tcod
 import src
 
+import src.entity.entities as entities
+
 WIDTH, HEIGHT = 720, 480
 TILESET_SIZE = 16
 FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
 
 tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
                                       charmap=tcod.tileset.CHARMAP_CP437)
-
 
 # def test_menu(context,
 #               height: int = 300,
