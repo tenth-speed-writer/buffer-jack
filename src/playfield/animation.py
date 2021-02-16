@@ -1,6 +1,7 @@
 from typing import Iterable
 from collections import deque
 from copy import deepcopy
+from src.sigil import Sigil
 
 
 class FrameAlreadyExpired(Exception):
@@ -18,7 +19,7 @@ class AnimationFrame:
 
     @param sigil The sigil to display while this event is active
     @param length The lifespan of this animation frame, in ticks"""
-    def __init__(self, sigil: str, length: int):
+    def __init__(self, sigil: Sigil, length: int):
         self.sigil = sigil
         self.length = length
 
@@ -98,3 +99,6 @@ class Animation:
         else:
             # Raise an exception if the animation isn't running
             raise AnimationNotRunning("Tried to tick an animation that isn't running!")
+
+    def get_sigil(self) -> Sigil:
+        return self._current_frame.sigil
