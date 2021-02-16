@@ -1,5 +1,6 @@
 from typing import Tuple
 from copy import deepcopy
+
 # Corresponds to CP437. Update if necessary.
 # If that happens more than once, make a class for the tilesets w/ permitted characters as a property.
 #
@@ -118,8 +119,8 @@ class Sigil:
         if not 1 <= p <= 5:
             raise ValueError("Sigil priority must be in range [1-5]. Given {}"
                              .format(str(p)))
-        else:
-            self._priority = p
+
+        self._priority = p
 
     def __str__(self):
         """Casting the sigil to a string should probably just return its character."""
