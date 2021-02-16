@@ -86,6 +86,8 @@ class PlayField:
         # populating the _field variable by the row.
         self._field: List[List[Cell]] = []
 
+        self._animations: List = []
+
         for y in range(0, self.height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
@@ -138,6 +140,10 @@ class PlayField:
             return cell in r
 
         return True in [row_has_cell(row) for row in self._field]
+
+    def tick(self) -> None:
+        """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
+        pass
 
 
 ############
