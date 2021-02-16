@@ -1,3 +1,4 @@
+from src.sigil import Sigil
 from typing import Optional, Tuple
 
 
@@ -18,15 +19,13 @@ class Entity:
     """Anything which can be rendered in a PlayField, be it terrain or actor."""
     def __init__(self,
                  size: int,
-                 sigil: str,
+                 sigil: Sigil,
                  name: Optional[str] = None,
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
-                 sigil_priority: int = 3,
                  passable: bool = False):
         self._sigil = sigil
-        self._sigil_priority = sigil_priority
         self._size = size
         self._position = position
         self._name = name
@@ -92,11 +91,11 @@ class Entity:
             return self._parent_cell.position
 
     @property
-    def sigil(self):
+    def sigil(self) -> Tuple[str, int, Tuple[int, int, int]]:
         """Returns the class's sigil and that sigil's priority.
         A higher priority means this sigil will be rendered over the others.
         Level 3 is mobs and terrain, level 2 is stuff on the floor, level 4 is obscuring stuff like smoke."""
-        return self._sigil, self._sigil_priority
+        return self._sigil.as_tuple()
 
     @property
     def size(self) -> int:

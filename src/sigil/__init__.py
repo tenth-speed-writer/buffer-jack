@@ -105,9 +105,9 @@ class Sigil:
         """Assigns a new red, blue, and green value from a tuple--assuming they're valid integers in [0-255]."""
         self.r, self.g, self.b = rgb
 
-    def as_tuple(self) -> Tuple[str, Tuple[int, int, int]]:
+    def as_tuple(self) -> Tuple[str, int, Tuple[int, int, int]]:
         """Returns a tuple with the sigil's character and its color tuple."""
-        return self.character, (self.r, self.g, self.b)
+        return self.character, self.priority, (self.r, self.g, self.b)
 
     @property
     def priority(self) -> int:

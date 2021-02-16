@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 from src.entity import Entity
-
+from src.sigil import Sigil
 
 class Static(Entity):
     """Static vs Mobile determines whether an Entity has the logic to move under its own prerogative.
@@ -16,7 +16,7 @@ class Mobile(Entity):
     an @property move_cost which can be overridden for game logic."""
     def __init__(self,
                  size: int,
-                 sigil: str,
+                 sigil: Sigil,
                  name: Optional[str] = None,
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
@@ -27,8 +27,7 @@ class Mobile(Entity):
         super().__init__(size=size, sigil=sigil, name=name,
                          parent_cell=parent_cell,
                          parent_playfield=parent_playfield,
-                         position=position,
-                         sigil_priority=sigil_priority)
+                         position=position)
         self._base_move_cost = base_move_cost
 
         # DEVNOTE: When entities spawn, they'll be on their base cooldown.
@@ -52,21 +51,15 @@ class Mobile(Entity):
             self._action_cooldown -= 1
 
 
-class ToyBoi(Mobile):
-    def __init__(self, name: str = "Toy Boi the delightful!"):
-        super().__init__(size=3,
-                         sigil="@",
-                         name=name)
-
-
 class Barricade(Static):
     """A simple "█" impassible tile.
     TODO: Create a wall which picks a border tile based on its neighbors."""
     def __init__(self):
         super().__init__(name="Barricade",
                          size=5,
-                         sigil="█",
-                         sigil_priority=3)
+                         sigil=Sigil("█",
+                                     priority=3,
+                                     color=(205, 205, 205)))
 
 # foo = ToyBoi()
 #

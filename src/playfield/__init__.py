@@ -157,7 +157,9 @@ from src.entity import entities
 class ToyBoi(Entity):
     def __init__(self, name: str = "Toy Boi the delightful!"):
         super().__init__(size=3,
-                         sigil="@",
+                         sigil=Sigil(character="@",
+                                     priority=3,
+                                     color=(236, 71, 233)),
                          name=name)
 
 boi = ToyBoi()
