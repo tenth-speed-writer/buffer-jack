@@ -3,7 +3,7 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Callable
 from src.sigil import Sigil
 
 
@@ -19,24 +19,24 @@ class Cell:
         self.contents = [c for c in contents]
 
     @property
-    def sigils(self):
+    def sigils(self) -> List[Sigil]:
         """Returns an iterable of the highest-priority sigil or sigils in this cell."""
 
         # DEVNOTE: The idea is to cycle through top sigils for a given rendered tile on the map
         if len(self.contents) > 0:
             # Get the highest sigil priority from all (sigil, priority)
             # tuples, then return a list of sigils with that priority.
-            sigils = [entity.sigil for entity in self.contents]
+            sigils = [(entity.sigil, entity.sigil.priority) for entity in self.contents]
             max_value = max([s[1] for s in sigils])
             top_sigils = [s[0]
                           for s in sigils
                           if s[1] == max_value]
 
-            return [s for s in top_sigils]
+            return top_sigils
 
         else:
             # If there's nothing here, return an iterable with an empty string."
-            return tuple("")
+            return []
 
     @property
     def position(self) -> Tuple[int, int]:
@@ -133,7 +133,7 @@ class PlayField:
             c = []
             for row in self._field:
                 for value in row:
-                    c += value
+                    c += [value]
             return c
 
     def has_cell(self, cell: Cell) -> bool:
@@ -148,6 +148,21 @@ class PlayField:
         """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
         pass
 
+    def drawables(self) -> List[Dict]:
+        """Render own cells into an iterable which can be printed to a console line by line."""
+        cells: List[Cell] = self.get_cells()
+
+        # TODO: Implement animations here as an alternative to just showing the first top sigil
+        drawables = [{"x": c.position[0],
+                      "y": c.position[1],
+                      "character": c.sigils[0].character,
+                      "priority": c.sigils[0].priority,
+                      "RGB": c.sigils[0].color}
+                     for c in cells
+                     if c.contents and len(c.contents) != 0]
+        return drawables
+
+
 
 ############
 # Import for testing:
@@ -157,7 +172,7 @@ from src.entity import entities
 class ToyBoi(Entity):
     def __init__(self, name: str = "Toy Boi the delightful!"):
         super().__init__(size=3,
-                         sigil="@",
+                         sigil=Sigil("@"),
                          name=name)
 
 boi = ToyBoi()
@@ -191,3 +206,5 @@ bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),
 
 
 print(bar.get_cell(x=4, y=1).sigils)
+
+print(bar.drawables())
