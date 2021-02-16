@@ -1,3 +1,5 @@
+__all__ = ["Sigil", "characters_cp437"]
+
 from typing import Tuple
 from copy import deepcopy
 

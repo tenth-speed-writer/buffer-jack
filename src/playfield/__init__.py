@@ -3,8 +3,8 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-# Import for testing: from src.entity import entities
 from typing import Optional, List, Tuple
+from src.sigil import Sigil
 
 
 class Cell:
@@ -150,40 +150,44 @@ class PlayField:
 
 
 ############
-# class ToyBoi(Entity):
-#     def __init__(self, name: str = "Toy Boi the delightful!"):
-#         super().__init__(size=3,
-#                          sigil="@",
-#                          name=name)
-
-# print(len(foo._field))
-# print(foo._field[0][0].__dir__())
-# print(foo._field[5][8].position)
-# print(foo._field[5][0].sigils)
-# print(foo.has_cell(foo._field[4][2]))
-# print(foo.has_cell(Cell(PlayField(5,5), 2, 3)))
-# boi = ToyBoi()
-# foo = PlayField(40, 30, contents=((2, 3, boi),))
-# print(str(boi.position))
-# foo.get_cell(2, 3).contents[0].move_to(4, 6)
-# print(boi.position)
+# Import for testing:
+from src.entity import entities
 
 
-# bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),
-#                                   (0, 1, entities.Barricade()),
-#                                   (0, 2, entities.Barricade()),
-#                                   (1, 0, entities.Barricade()),
-#                                   (1, 2, entities.Barricade()),
-#                                   (2, 0, entities.Barricade()),
-#                                   (2, 2, entities.Barricade()),
-#                                   (3, 0, entities.Barricade()),
-#                                   (3, 2, entities.Barricade()),
-#                                   (3, 1, entities.Barricade()),
-#                                   (4, 0, entities.Barricade()),
-#                                   (4, 1, entities.Barricade()),
-#                                   (4, 1, entities.Barricade()),
-#                                   (4, 2, entities.Barricade())
-#                                   ))
-#
-#
-# print(bar.get_cell(x=4, y=1).sigils)
+class ToyBoi(Entity):
+    def __init__(self, name: str = "Toy Boi the delightful!"):
+        super().__init__(size=3,
+                         sigil="@",
+                         name=name)
+
+boi = ToyBoi()
+foo = PlayField(40, 30, contents=((2, 3, boi),))
+print(len(foo._field))
+print(foo._field[0][0].__dir__())
+print(foo._field[5][8].position)
+print(foo._field[5][0].sigils)
+print(foo.has_cell(foo._field[4][2]))
+print(foo.has_cell(Cell(PlayField(5,5), 2, 3)))
+print(str(boi.position))
+foo.get_cell(2, 3).contents[0].move_to(4, 6)
+print(boi.position)
+
+
+bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),
+                                  (0, 1, entities.Barricade()),
+                                  (0, 2, entities.Barricade()),
+                                  (1, 0, entities.Barricade()),
+                                  (1, 2, entities.Barricade()),
+                                  (2, 0, entities.Barricade()),
+                                  (2, 2, entities.Barricade()),
+                                  (3, 0, entities.Barricade()),
+                                  (3, 2, entities.Barricade()),
+                                  (3, 1, entities.Barricade()),
+                                  (4, 0, entities.Barricade()),
+                                  (4, 1, entities.Barricade()),
+                                  (4, 1, entities.Barricade()),
+                                  (4, 2, entities.Barricade())
+                                  ))
+
+
+print(bar.get_cell(x=4, y=1).sigils)
