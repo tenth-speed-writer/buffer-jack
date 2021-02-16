@@ -51,16 +51,18 @@ class Cell:
             x, y = self.position
             entity.introduce_at(x, y, self.playfield)
         else:
-            print("Warning: tried to move Entity {} into a cell that it's already in.".format(entity.name))
+            print("Warning: tried to move Entity {} into a cell that it's already in."
+                  .format(entity.name))
 
     def remove_entity(self, entity: Entity) -> None:
         """Removes an entity from .contents if it exists, or prints a warning if not."""
         if entity in self.contents:
             self.contents = self.contents.remove(entity)
         else:
-            print("Can't remove entity {} from cell x:{}, y:{} as it isn't there!".format(entity.name,
-                                                                                          str(self._x),
-                                                                                          str(self._y)))
+            print("Can't remove entity {} from cell x:{}, y:{} as it isn't there!"
+                  .format(entity.name,
+                          str(self._x),
+                          str(self._y)))
 
     @property
     def playfield(self):
@@ -118,7 +120,8 @@ class PlayField:
         if 0 <= x < len(self._field[0]) and 0 <= y < len(self._field):
             return self._field[y][x]
         else:
-            raise ValueError("Location (x:{}, y:{}) is out of bounds!".format(str(x), str(y)))
+            raise ValueError("Location (x:{}, y:{}) is out of bounds!"
+                             .format(str(x), str(y)))
 
     def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
