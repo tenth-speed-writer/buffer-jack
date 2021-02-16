@@ -22,7 +22,8 @@ class Mobile(Entity):
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
                  sigil_priority: int = 3,
-                 base_move_cost: int = 100) -> None:
+                 base_move_cost: int = 100,
+                 passable: bool = False) -> None:
         super().__init__(size=size, sigil=sigil, name=name,
                          parent_cell=parent_cell,
                          parent_playfield=parent_playfield,
@@ -49,3 +50,26 @@ class Mobile(Entity):
         Override as necessary, but be sure to decrement the action cooldown. :)"""
         if self._action_cooldown > 0:
             self._action_cooldown -= 1
+
+
+class ToyBoi(Mobile):
+    def __init__(self, name: str = "Toy Boi the delightful!"):
+        super().__init__(size=3,
+                         sigil="@",
+                         name=name)
+
+
+class Barricade(Static):
+    """A simple "█" impassible tile.
+    TODO: Create a wall which picks a border tile based on its neighbors."""
+    def __init__(self):
+        super().__init__(name="Barricade",
+                         size=5,
+                         sigil="█",
+                         sigil_priority=3)
+
+# foo = ToyBoi()
+#
+# while foo.cooldown > 0:
+#     foo.tick()
+#     print(foo.cooldown)
