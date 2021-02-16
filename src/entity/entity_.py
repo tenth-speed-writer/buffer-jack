@@ -74,13 +74,16 @@ class Entity:
     @cell.setter
     def cell(self, new_cell) -> None:
         """Change this entity's cell, including changing its playfield if necessary.
-        This generally corresponds to the entity being moved or placed."""
+        This generally corresponds to the entity being moved on the map.
+        Can maybe override to add on-move logic, but move_to is a better place to do so."""
 
         self.playfield = new_cell.playfield
         self._change_cell(new_cell)
 
     @property
     def position(self):
+        """Return the position of this object by asking its parent cell.
+        You could override this, but probably shouldn't. Probably."""
         if not self._parent_playfield:
             raise NotOnPlayFieldException("Entity {} does not have a parent PlayField.".format(str(self._name)))
         elif not self._parent_cell:
@@ -97,15 +100,25 @@ class Entity:
 
     @property
     def size(self) -> int:
+        """Returns the size of an entity.
+        TODO: Make this have an impact somewhere in gameplay."""
         return self._size
 
     @property
     def name(self) -> str:
+        """Return the name of this entity. Override for contextual name generation."""
         return str(self._name)
+
+    @name.setter
+    def name(self, new_name: str) -> None:
+        """Set the name of this Entity. Override to add on-change logic."""
+        self._name = new_name
 
     def move_to(self, x, y) -> None:
         """Get Cell x, y from the entity's playfield, then attempt to move the entity there.
-        The entity must already have a playfield in which it exists; otherwise, use introduce_at(x, y, playfield)"""
+        The entity must already have a playfield in which it exists; otherwise, use introduce_at(x, y, playfield).
+
+        Override to add on-move logic."""
 
         # Find the cell in question and reassign it, firing the
         # above-written setter to handle both pf and cell changes
@@ -114,14 +127,20 @@ class Entity:
 
     def introduce_at(self, x, y, playfield) -> None:
         """As per move_to, but assumes the Entity doesn't already have a playfield.
-        Use when spawning an entity on the playfield for the first time."""
+        Use when spawning an entity on the playfield for the first time.
+
+        Override to add game logic when an entity spawns on the map."""
         self.playfield = playfield
         self.cell = playfield.get_cell(x=x, y=y)
 
     @property
     def passable(self) -> bool:
+        """Determines whether this tile is passable to other entities.
+        Override to allow situational passability."""
         return self._passable
 
     @passable.setter
-    def passable(self, can_pass: bool):
+    def passable(self, can_pass: bool) -> None:
+        """Set whether an entity is passable to other entities.
+        Override to enact logic on variable change."""
         self._passable = can_pass
