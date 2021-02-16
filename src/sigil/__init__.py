@@ -114,9 +114,10 @@ class Sigil:
         return self._priority
 
     @priority.setter
-    def priority(self, p) -> None:
+    def priority(self, p: int) -> None:
         """Checks if a new specified sigil priority is valid before assigning it."""
-        if not 1 <= p <= 5:
+        p_out_of_range = not 1 <= p <= 5
+        if p_out_of_range:
             raise ValueError("Sigil priority must be in range [1-5]. Given {}"
                              .format(str(p)))
 
