@@ -23,7 +23,8 @@ class Entity:
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
-                 sigil_priority: int = 3):
+                 sigil_priority: int = 3,
+                 passable: bool = False):
         self._sigil = sigil
         self._sigil_priority = sigil_priority
         self._size = size
@@ -32,6 +33,7 @@ class Entity:
 
         self._parent_cell = parent_cell
         self._parent_playfield = parent_playfield
+        self._passable = passable
 
     @property
     def cell(self):
@@ -115,3 +117,11 @@ class Entity:
         Use when spawning an entity on the playfield for the first time."""
         self.playfield = playfield
         self.cell = playfield.get_cell(x=x, y=y)
+
+    @property
+    def passable(self) -> bool:
+        return self._passable
+
+    @passable.setter
+    def passable(self, can_pass: bool):
+        self._passable = can_pass
