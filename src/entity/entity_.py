@@ -1,4 +1,5 @@
 from typing import Optional, Tuple
+from src.sigil import Sigil
 
 
 class CannotMoveException(Exception):
@@ -18,15 +19,13 @@ class Entity:
     """Anything which can be rendered in a PlayField, be it terrain or actor."""
     def __init__(self,
                  size: int,
-                 sigil: str,
+                 sigil: Sigil,
                  name: Optional[str] = None,
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
-                 sigil_priority: int = 3,
                  passable: bool = False):
         self._sigil = sigil
-        self._sigil_priority = sigil_priority
         self._size = size
         self._position = position
         self._name = name
