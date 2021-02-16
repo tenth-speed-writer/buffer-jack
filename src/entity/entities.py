@@ -21,8 +21,7 @@ class Mobile(Entity):
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
-                 base_move_cost: int = 100,
-                 passable: bool = False) -> None:
+                 base_move_cost: int = 100) -> None:
         super().__init__(size=size, sigil=sigil, name=name,
                          parent_cell=parent_cell,
                          parent_playfield=parent_playfield,
@@ -39,7 +38,7 @@ class Mobile(Entity):
         return self._base_move_cost
 
     @property
-    def cooldown(self):
+    def cooldown(self) -> int:
         """Getter for own action cooldown remaining. Probably don't override... probably."""
         return self._action_cooldown
 
