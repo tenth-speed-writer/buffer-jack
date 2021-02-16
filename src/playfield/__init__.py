@@ -3,6 +3,7 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
+from src.entity import entities
 from typing import Optional, List, Tuple
 
 
@@ -157,3 +158,8 @@ class PlayField:
 # print(str(boi.position))
 # foo.get_cell(2, 3).contents[0].move_to(4, 6)
 # print(boi.position)
+
+
+bar = PlayField(30, 20, contents=((0, 0, entities.Barricade()),))
+
+
