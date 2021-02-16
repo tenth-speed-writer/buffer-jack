@@ -3,7 +3,7 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-from src.entity import entities
+# Import for testing: from src.entity import entities
 from typing import Optional, List, Tuple
 
 
