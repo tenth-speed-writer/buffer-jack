@@ -3,8 +3,10 @@ __all__ = ["Cell", "PlayField"]
 # Bless type hinting.
 from collections.abc import Iterable
 from src.entity import Entity
-from typing import Optional, List, Tuple, Dict, Callable
+from src.entity.entities import Mobile, Static
+from typing import Optional, List, Tuple, Dict
 from src.sigil import Sigil
+
 
 
 class Cell:
@@ -157,10 +159,38 @@ class PlayField:
                       "y": c.position[1],
                       "character": c.sigils[0].character,
                       "priority": c.sigils[0].priority,
-                      "RGB": c.sigils[0].color}
+                      "rgb": c.sigils[0].color}
                      for c in cells
                      if c.contents and len(c.contents) != 0]
         return drawables
+
+    @property
+    def entities(self) -> List[Entity]:
+        cells = self.get_cells()
+
+        # Extract contents from each non-empty cell and flatten them into one list
+        ent_lists = [c.contents for c in cells if c.contents]
+        flat_ents = sum(ent_lists, [])
+
+        return flat_ents
+
+    @property
+    def mobiles(self) -> List[Mobile]:
+        """Returns a list of Mobile entities in this playfield."""
+
+        # Only return those entities which are instances of Mobile or its subclasses
+        ents = self.entities
+        return [ent for ent in ents
+                if isinstance(ent, Mobile) or issubclass(ent.__class__, Mobile)]
+
+    @property
+    def statics(self) -> List[Static]:
+        """Returns a list of Static entities in this playfield."""
+
+        # As per .mobiles, only return those which are instances of Static or its subclasses
+        ents = self.entities
+        return [ent for ent in ents
+                if isinstance(ent, Static) or issubclass(ent.__class__, Static)]
 
 
 
