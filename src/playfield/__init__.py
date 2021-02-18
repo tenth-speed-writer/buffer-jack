@@ -8,7 +8,6 @@ from typing import Optional, List, Tuple, Dict
 from src.sigil import Sigil
 
 
-
 class Cell:
     """A collection of entities that exist in the same place on the PlayField."""
     def __init__(self, parent, x: int, y: int,
@@ -191,7 +190,6 @@ class PlayField:
         ents = self.entities
         return [ent for ent in ents
                 if isinstance(ent, Static) or issubclass(ent.__class__, Static)]
-
 
 
 ############
