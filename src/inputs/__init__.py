@@ -32,27 +32,27 @@ def get_position_delta(event: tcod.event.Event) -> PositionDelta:
 
     # Numpad
     if event.sym == tcod.event.K_KP_1:
-        return PositionDelta(dx=-1, dy=-1)
+        return PositionDelta(dx=-1, dy=1)
     elif event.sym == tcod.event.K_KP_2:
-        return PositionDelta(dx=0, dy=-1)
+        return PositionDelta(dx=0, dy=1)
     elif event.sym == tcod.event.K_KP_3:
-        return PositionDelta(dx=1, dy=-1)
+        return PositionDelta(dx=1, dy=1)
     elif event.sym == tcod.event.K_KP_4:
         return PositionDelta(dx=-1, dy=0)
     elif event.sym == tcod.event.K_KP_6:
         return PositionDelta(dx=1, dy=0)
     elif event.sym == tcod.event.K_KP_7:
-        return PositionDelta(dx=-1, dy=1)
+        return PositionDelta(dx=-1, dy=-1)
     elif event.sym == tcod.event.K_KP_8:
-        return PositionDelta(dx=0, dy=1)
+        return PositionDelta(dx=0, dy=-1)
     elif event.sym == tcod.event.K_KP_9:
-        return PositionDelta(dx=1, dy=1)
+        return PositionDelta(dx=1, dy=-1)
 
     # Arrow keys
     elif event.sym == tcod.event.K_UP:
-        return PositionDelta(dx=0, dy=1)
-    elif event.sym == tcod.event.K_DOWN:
         return PositionDelta(dx=0, dy=-1)
+    elif event.sym == tcod.event.K_DOWN:
+        return PositionDelta(dx=0, dy=--1)
     elif event.sym == tcod.event.K_LEFT:
         return PositionDelta(dx=-1, dy=0)
     elif event.sym == tcod.event.K_RIGHT:
