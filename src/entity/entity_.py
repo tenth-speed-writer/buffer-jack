@@ -91,11 +91,15 @@ class Entity:
             return self._parent_cell.position
 
     @property
-    def sigil(self):
+    def sigil(self) -> Sigil:
         """Returns the class's sigil and that sigil's priority.
         A higher priority means this sigil will be rendered over the others.
         Level 3 is mobs and terrain, level 2 is stuff on the floor, level 4 is obscuring stuff like smoke."""
         return self._sigil
+
+    @sigil.setter
+    def sigil(self, new_sigil: Sigil) -> None:
+        self._sigil = new_sigil
 
     @property
     def size(self) -> int:
