@@ -70,6 +70,16 @@ class Cell:
     def playfield(self):
         return self._parent
 
+    @property
+    def passable(self) -> bool:
+        """If this cell is empty, or it's not empty but none of its contents are impassable, then it's passable."""
+        if not self.contents:
+            return True
+        elif False in [c.passable for c in self.contents]:
+            return False
+        else:
+            return True
+
 
 class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
