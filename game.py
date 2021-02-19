@@ -46,25 +46,25 @@ def main() -> None:
         #TODO: Remove test contents and generate the main menu
         # game_pf = src.playfield.PlayField(width=floor(WIDTH/TILESET_SIZE),
         #                                   height=floor(HEIGHT/TILESET_SIZE),
-        #                                   contents=((0, 0, entities.Barricade()),
-        #                                             (0, 1, entities.Barricade()),
-        #                                             (0, 2, entities.Barricade()),
-        #                                             (1, 0, entities.Barricade()),
-        #                                             (1, 2, entities.Barricade()),
-        #                                             (2, 0, entities.Barricade()),
-        #                                             (2, 2, entities.Barricade()),
-        #                                             (3, 0, entities.Barricade()),
-        #                                             (3, 2, entities.Barricade()),
-        #                                             (3, 1, entities.Barricade()),
-        #                                             (4, 0, entities.Barricade()),
-        #                                             (4, 1, entities.Barricade()),
-        #                                             (4, 1, entities.Barricade()),
-        #                                             (4, 2, entities.Barricade())
+        #                                   contents=((0, 0, entities.MemoryBounds()),
+        #                                             (0, 1, entities.MemoryBounds()),
+        #                                             (0, 2, entities.MemoryBounds()),
+        #                                             (1, 0, entities.MemoryBounds()),
+        #                                             (1, 2, entities.MemoryBounds()),
+        #                                             (2, 0, entities.MemoryBounds()),
+        #                                             (2, 2, entities.MemoryBounds()),
+        #                                             (3, 0, entities.MemoryBounds()),
+        #                                             (3, 2, entities.MemoryBounds()),
+        #                                             (3, 1, entities.MemoryBounds()),
+        #                                             (4, 0, entities.MemoryBounds()),
+        #                                             (4, 1, entities.MemoryBounds()),
+        #                                             (4, 1, entities.MemoryBounds()),
+        #                                             (4, 2, entities.MemoryBounds())
         #                                             ))
         game_pf = src.playfield.PlayField(width=floor(WIDTH / TILESET_SIZE),
                                           height=floor(HEIGHT / TILESET_SIZE),
-                                          contents=((0, 0, entities.Barricade()),
-                                                    (0, 1, entities.Barricade())))
+                                          contents=((0, 0, entities.MemoryBounds()),
+                                                    (0, 1, entities.MemoryBounds())))
 
         player_entity = src.entity.entities.Mobile(size=3,
                                                    sigil=src.sigil.Sigil("@"),
@@ -109,7 +109,7 @@ def main() -> None:
                         new_y = y + delta.dy
 
                         # TODO: Add passability checking
-                        if 0 < x < game_pf.width and 0 < y < game_pf.height:
+                        if 0 < x < game_pf.width-1 and 0 < y < game_pf.height-1:
                             player_entity.move_to(x=new_x, y=new_y)
                             print("{}, {} - Now at {}, {}".
                                   format(str(delta.dx),
