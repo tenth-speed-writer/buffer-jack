@@ -1,5 +1,5 @@
 from tcod.console import Console
-from typing import Iterable, Optional, Callable, List, Tuple
+from typing import Iterable, Optional, Callable, List, Tuple, Optional
 from copy import deepcopy
 
 
@@ -200,23 +200,90 @@ class MenuOption:
 
 
 class Menu:
-    def __init__(self,
-                 max_width: int, max_height: int,
-                 pad_top: int = 2, pad_right: int = 2,
-                 pad_bottom: int = 2, pad_left: int = 2,
-                 options: Optional[Iterable[MenuOption]] = None):
-        pass
+    """Base class for a menu. Subclass to add specific functionality or context/console/game awareness."""
 
     @property
-    def options(self):
-        return self._options
+    def padding(self) -> Tuple[int, int, int, int]:
+        """Returns the current padding tuple, in tiles, as (top, right, bottom, left)."""
+        return self._padding
 
-    @options.setter
-    def options(self, opts: Iterable[MenuOption]):
-        self._options = [o for o in opts]
+    @padding.setter
+    def padding(self, pad) -> None:
+        """Sets new padding, in tiles, in the format (top, right, bottom, left)."""
+        if sum([p >= 0 for p in pad]) == 4:
+            self._padding = pad
+        else:
+            raise ValueError("All padding values must be integers of no less than 0, given {}".format(str(pad)))
 
     def open_menu(self, x: int, y: int, console: Console):
         is_open = True
         while is_open:
             # Run a movement handler here
             pass
+
+    @property
+    def spacing(self) -> int:
+        return self._spacing
+
+    @spacing.setter
+    def spacing(self, spacing: int) -> None:
+        if spacing >= 0:
+            self._spacing = spacing
+        else:
+            raise ValueError(".spacing must be an integer of at least zero tiles--given {}".format(str(spacing)))
+
+    @property
+    def shape(self):
+        return self._width, self._height
+
+    @shape.setter
+    def shape(self, new_shape: Tuple[int, int]):
+        """Sets a new width and height given a tuple of (w, h), both of which are integers greater than zero."""
+        if sum([el > 0 for el in new_shape]) != 2:
+            raise ValueError("Both width and height must be greater than zero--given (width: {}, height: {}"
+                             .format(str(new_shape[0]),
+                                     str(new_shape[1])))
+
+        else:
+            self._width, self._height = new_shape
+
+    @property
+    def contents(self) -> List[MenuOption]:
+        return self._contents
+
+    def clear(self) -> None:
+        """Removes all contents. Irreversible."""
+        self._contents = []
+
+    def __init__(self,
+                 width: int, height: int,
+                 spacing: int = 2,
+                 padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
+                 contents: Optional[Iterable[MenuOption]] = ()):
+        """
+        Generate a new menu with specified dimensions.
+        :param width: Total width of the menu, in tiles
+        :param height: Total height of the menu, in tiles
+        :param spacing: How many empty rows to draw between each menu item
+        :param padding: A tuple of (top, right, bottom, left), in tiles with which to pad the menu
+        :param contents: An iterable of MenuOption instances, in order, to be added to this menu. Can be empty.
+        """
+        # Ensure width and height are both at least one tile
+        if sum([dim > 0 for dim in (width, height)]) == 2:
+            self._width, self._height = width, height
+        else:
+            raise ValueError("Width and height must both be greater than zero--given (width: {}, height: {})"
+                             .format(str(width),
+                                     str(height)))
+
+        # Test if all padding values are no less than zero
+        if sum([p >= 0 for p in padding]) == 4:
+            self._padding = padding
+        else:
+            raise ValueError("All padding values must be integers of no less than 0, given {}".format(str(padding)))
+
+        # Test that spacing is no less than zero
+        if spacing >= 0:
+            self._spacing = spacing
+        else:
+            raise ValueError("Param spacing must be an integer of at least zero tiles--given {}".format(str(spacing)))
