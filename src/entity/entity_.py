@@ -119,9 +119,13 @@ class Entity:
 
         Override to add on-move logic."""
 
-        # Find the cell in question and reassign it, firing the
+        # Find the cell in question and reassign it, firing the112
         # above-written setter to handle both pf and cell changes
+
+        # TODO: Destination passability logic
         new_cell = self.playfield.get_cell(x, y)
+        self.cell.remove_entity(self)
+        new_cell.add_entity(self)
         self.cell = new_cell
 
     def introduce_at(self, x, y, playfield) -> None:
@@ -130,7 +134,11 @@ class Entity:
 
         Override to add game logic when an entity spawns on the map."""
         self.playfield = playfield
-        self.cell = playfield.get_cell(x=x, y=y)
+
+        cell = playfield.get_cell(x=x, y=y)
+        cell.add_entity(self)
+        print(cell.contents)
+        self.cell = cell
 
     @property
     def passable(self) -> bool:

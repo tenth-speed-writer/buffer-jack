@@ -47,10 +47,11 @@ class Cell:
     def add_entity(self, entity: Entity) -> None:
         """Appends a new entity to this cell's contents, assuming it's not
         already there, and pairs that entity with this cell."""
-        if entity not in self.contents:
-            self.contents.append(entity)
-            x, y = self.position
-            entity.introduce_at(x, y, self.playfield)
+        if not self.contents and entity not in self.contents:
+            print("{} /// {}".format(str(entity), str(self.contents)))
+            self.contents = [entity]
+        elif entity not in self.contents:
+            self.contents = self.contents.append(entity)
         else:
             print("Warning: tried to move Entity {} into a cell that it's already in."
                   .format(entity.name))
@@ -145,10 +146,6 @@ class PlayField:
 
         return True in [row_has_cell(row) for row in self._field]
 
-    def tick(self) -> None:
-        """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
-        pass
-
     def drawables(self) -> List[Dict]:
         """Render own cells into an iterable which can be printed to a console line by line."""
         cells: List[Cell] = self.get_cells()
@@ -162,6 +159,8 @@ class PlayField:
                      for c in cells
                      if c.contents and len(c.contents) != 0]
         return drawables
+
+    from tcod.console import Console
 
     @property
     def entities(self) -> List[Entity]:
@@ -190,6 +189,12 @@ class PlayField:
         ents = self.entities
         return [ent for ent in ents
                 if isinstance(ent, Static) or issubclass(ent.__class__, Static)]
+
+    def tick(self) -> None:
+        """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
+        mobs = self.mobiles
+        for m in mobs:
+            m.tick()
 
 
 ############

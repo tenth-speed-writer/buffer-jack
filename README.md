@@ -7,5 +7,6 @@ Each tick:
 
 Having a .tick() method on mobiles might be helpful
 
+---
 
-            
+Create unique event managers for menus, main playfield.
