@@ -123,9 +123,16 @@ class Entity:
         # above-written setter to handle both pf and cell changes
 
         # TODO: Destination passability logic
+        if not (0 <= x <= self.playfield.width - 1) or not (0 <= y <= self.playfield.height - 1):
+            raise ValueError("Move-to destination (x:{}, y:{}) for entity {} is out of bounds!"
+                             .format(str(x), str(y), str(self.name)))
+
         new_cell = self.playfield.get_cell(x, y)
+
+        print(new_cell.position)
         self.cell.remove_entity(self)
         new_cell.add_entity(self)
+
         self.cell = new_cell
 
     def introduce_at(self, x, y, playfield) -> None:

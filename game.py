@@ -109,13 +109,9 @@ def main() -> None:
                         new_y = y + delta.dy
 
                         # TODO: Add passability checking
-                        if 0 < x < game_pf.width-1 and 0 < y < game_pf.height-1:
+                        if (0 <= new_x <= game_pf.width - 1) and (0 <= new_y <= game_pf.height - 1):
                             player_entity.move_to(x=new_x, y=new_y)
-                            print("{}, {} - Now at {}, {}".
-                                  format(str(delta.dx),
-                                         str(delta.dy),
-                                         str(new_x),
-                                         str(new_y)))
+
                     # elif event.sym == tcod.event.K_i:
                     #     test_menu(context=context)
                     else:
