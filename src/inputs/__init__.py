@@ -27,6 +27,12 @@ def is_movement_key(event: tcod.event.Event) -> bool:
         return False
 
 
+def is_wait_action(event: tcod.event.Event) -> bool:
+    """Returns true if the event is a keydown"""
+    wait_symbols = [tcod.event.K_KP_5, tcod.event.K_PERIOD]
+    return event.type == "KEYDOWN" and event.sym in wait_symbols
+
+
 def get_position_delta(event: tcod.event.Event) -> PositionDelta:
     """Returns a PositionDelta (a .dx and a .dy) if given a valid movement key event, else raises a ValueError."""
 
