@@ -43,6 +43,12 @@ class Mobile(Entity):
         """Getter for own action cooldown remaining. Probably don't override... probably."""
         return self._action_cooldown
 
+    @cooldown.setter
+    def cooldown(self, ticks: int) -> None:
+        if ticks <= 0:
+            raise ValueError("Argument ticks to Mobile.cooldown() must > 0")
+        self._action_cooldown = ticks
+
     def tick(self) -> None:
         """What happens to this entity every tick.
         Override as necessary, but be sure to decrement the action cooldown. :)"""
