@@ -24,7 +24,7 @@ class Entity:
                  parent_cell: Optional[object] = None,
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
-                 passable: bool = False):
+                 passable: bool = True):
         self._sigil = sigil
         self._size = size
         self._position = position

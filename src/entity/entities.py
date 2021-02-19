@@ -2,6 +2,7 @@ from typing import Optional, Tuple
 from src.entity import Entity
 from src.sigil import Sigil
 
+
 class Static(Entity):
     """Static vs Mobile determines whether an Entity has the logic to move under its own prerogative.
     A Static can still be moved, but will complain unless move_to is further overridden."""
@@ -56,13 +57,14 @@ class Mobile(Entity):
 #                          name=name)
 
 
-class Barricade(Static):
-    """A simple "█" impassible tile.
+class MemoryBounds(Static):
+    """A simple "█" impassible tile. Makes a nice enough map edge for now.
     TODO: Create a wall which picks a border tile based on its neighbors."""
     def __init__(self):
-        super().__init__(name="Barricade",
+        super().__init__(name="Memory Bounds",
                          size=5,
-                         sigil=Sigil("█", color=(230, 230, 230)))
+                         sigil=Sigil("█", color=(230, 230, 230)),
+                         passable=False)
 
 # foo = ToyBoi()
 #
