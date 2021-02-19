@@ -1,6 +1,14 @@
 from tcod.console import Console
-from typing import Iterable, Optional, Callable, List, Tuple, Optional
+from typing import Iterable, Optional, Callable, List, Tuple, Optional, TypeAlias, Sequence
 from copy import deepcopy
+
+# Custom type for an RGB color tuple
+RGB = Tuple[int, int, int]
+
+
+# Custom types for a 2D list of tuples, each with a character and a color to be rendered.
+RenderableItem = Tuple[str, Tuple[int, int, int]]
+RenderableArray = Sequence[Sequence[Tuple[str, Tuple[int, int, int]]]]
 
 
 class MenuOption:
@@ -35,7 +43,7 @@ class MenuOption:
                  pad_horizontal: int = 1,
                  pad_vertical: int = 1,
                  has_border: bool = True,
-                 color: Tuple[int, int, int] = (240, 240, 240)):
+                 color: RGB = (240, 240, 240)):
         """
         Initializes a menu_option with specified parameters. Override and call
         via super().__init__() to make default values for custom subclasses.
@@ -77,7 +85,7 @@ class MenuOption:
         return self._text
 
     @property
-    def rows(self) -> List[List[Tuple[str, Tuple[int, int, int]]]]:
+    def rows(self) -> RenderableArray:
         """Renders this menu option as a list of lists of (char, color_tuple), including margins/border/padding"""
         def char_to_tuple(char: str):
             return char, self._color
@@ -195,12 +203,37 @@ class MenuOption:
             self._pad_horizontal = new_value
 
     @property
-    def color(self):
+    def color(self) -> RGB:
+        """Returns the color property of this MenuItem, to be used as the foreground color when it is rendered."""
         return self._color
+
+    @color.setter
+    def color(self, new_rgb: RGB) -> None:
+        """Sets the color of this MenuItem, assuming it's a tuple of 3 integers in range 0-255."""
+        for c in new_rgb:
+            if not 0 <= c <= 255:
+                raise ValueError("RGB values must be in range 0-255. Got {}".format(str(new_rgb)))
+        self._color = new_rgb
 
 
 class Menu:
     """Base class for a menu. Subclass to add specific functionality or context/console/game awareness."""
+
+    @staticmethod
+    def _intersperse_list(seq, value):
+        """Intersperses elements of seq with value. Borrowed from Sven Marnach on StackOverflow.
+        https://stackoverflow.com/questions/5655708/python-most-elegant-way-to-intersperse-a-list-with-an-element.
+
+        Used in this module to insert rows of empty tiles as spacing between rendered menu items."""
+        res = [value] * (2 * len(seq) - 1)
+        res[::2] = seq
+        return res
+
+    @staticmethod
+    def _imaginary_row(width: int,
+                       color: RGB = (0, 0, 0)):
+        return [(width, color)
+                for i in range(0, width)]
 
     @property
     def padding(self) -> Tuple[int, int, int, int]:
@@ -209,24 +242,56 @@ class Menu:
 
     @padding.setter
     def padding(self, pad) -> None:
-        """Sets new padding, in tiles, in the format (top, right, bottom, left)."""
+        """Sets new padding, in numbers of tiles (at least 0), in the format (top, right, bottom, left)."""
         if sum([p >= 0 for p in pad]) == 4:
             self._padding = pad
         else:
             raise ValueError("All padding values must be integers of no less than 0, given {}".format(str(pad)))
 
-    def open_menu(self, x: int, y: int, console: Console):
-        is_open = True
-        while is_open:
-            # Run a movement handler here
-            pass
+    @property
+    def pad_top(self) -> int:
+        """Returns the top padding, in tiles."""
+        return self.padding[0]
+
+    @pad_top.setter
+    def pad_top(self, pad: int) -> None:
+        raise ValueError("Single-value padding assignment not supported; assign a new tuple to .padding")
+
+    @property
+    def pad_right(self) -> int:
+        """Returns the right side padding, in tiles."""
+        return self.padding[1]
+
+    @pad_right.setter
+    def pad_right(self, pad: int) -> None:
+        raise ValueError("Single-value padding assignment not supported; assign a new tuple to .padding")
+
+    @property
+    def pad_bottom(self):
+        """Returns the bottom padding, in tiles."""
+        return self.padding[2]
+
+    @pad_bottom.setter
+    def pad_bottom(self, pad: int):
+        raise ValueError("Single-value padding assignment not supported; assign a new tuple to .padding")
+
+    @property
+    def pad_left(self):
+        """Returns the left side padding, in tiles."""
+        return self.padding[3]
+
+    @pad_left.setter
+    def pad_left(self, pad: int):
+        raise ValueError("Single-value padding assignment not supported; assign a new tuple to .padding")
 
     @property
     def spacing(self) -> int:
+        """Returns the number of tiles of spacing drawn between each of this menu's items."""
         return self._spacing
 
     @spacing.setter
     def spacing(self, spacing: int) -> None:
+        """Sets the spacing between selections for this menu, if given an integer value of at least zero tiles."""
         if spacing >= 0:
             self._spacing = spacing
         else:
@@ -234,6 +299,7 @@ class Menu:
 
     @property
     def shape(self):
+        """Returns this Menu's dimensions as (width, height)"""
         return self._width, self._height
 
     @shape.setter
@@ -248,18 +314,38 @@ class Menu:
             self._width, self._height = new_shape
 
     @property
+    def color(self) -> RGB:
+        """Returns the color property of this Menu, applied to its border.
+        TODO: Make a menu header as well and apply it there too"""
+        return self._color
+
+    @color.setter
+    def color(self, new_rgb: RGB) -> None:
+        """Sets the color of this MenuItem, assuming it's a tuple of 3 integers in range 0-255."""
+        for c in new_rgb:
+            if not 0 <= c <= 255:
+                raise ValueError("RGB values must be in range 0-255. Got {}".format(str(new_rgb)))
+        self._color = new_rgb
+
+    @property
     def contents(self) -> List[MenuOption]:
+        """Return this menu's list of MenuOptions."""
         return self._contents
 
     def clear(self) -> None:
         """Removes all contents. Irreversible."""
         self._contents = []
 
+    def add_option(self, opt: MenuOption):
+        self._contents = [] + self._contents + [opt]
+
     def __init__(self,
                  width: int, height: int,
                  spacing: int = 2,
+                 has_border: bool = False,
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
-                 contents: Optional[Iterable[MenuOption]] = ()):
+                 contents: Optional[Iterable[MenuOption]] = (),
+                 color: RGB = (255, 255, 255)):
         """
         Generate a new menu with specified dimensions.
         :param width: Total width of the menu, in tiles
@@ -287,3 +373,70 @@ class Menu:
             self._spacing = spacing
         else:
             raise ValueError("Param spacing must be an integer of at least zero tiles--given {}".format(str(spacing)))
+
+        # Test that, if has_border is true, there's some padding on all sides to draw it in.
+        if has_border and sum([p > 0 for p in self._padding]) < 4:
+            raise ValueError("Menu cannot have a border if padding is not at least 1 tile in each direction, given {}"
+                             .format(str(self._padding)))
+        else:
+            self._has_border = has_border
+
+        # Coerce contents to a list and assign
+        self._contents = [c for c in contents]
+
+        if sum(0 <= c <= 255 for c in color) < 3:
+            raise ValueError()
+        else:
+            self._color = color
+
+    def renderable(self) -> RenderableArray:
+        """Returns the entire menu as a 2D height-by-width RenderableArray."""
+        # If we generated the options correctly, row_width will be the same for all rows returned.
+        # Remain aware that opt_rows is a list of these lists, and we'll eventually flatten them.
+        opt_rows: List[RenderableArray] = [c.rows for c in self._contents]
+        row_width: int = len(opt_rows[0][0])
+
+        # Test that contents are of the correct width for this Menu
+        left_pad = self._padding[3]
+        right_pad = self._padding[1]
+        if row_width != self._width - (left_pad + right_pad):
+            raise ValueError("Row width must match menu width minus padding.\n" +
+                             "width: {}, row_width: {}, padding: L-{} + R-{}"
+                             .format(str(self._width),
+                                     str(row_width),
+                                     str(left_pad),
+                                     str(right_pad)))
+
+        # Test that all rows are of equal length to the first.
+        for row in opt_rows:
+            if len(row[0]) != row_width:
+                raise ValueError("Rows must be of equal width. First row: {} tiles. This row: {} tiles."
+                                 .format(str(row_width),
+                                         str(len(row[0]))))
+
+        # Intersperse the lists of menu item rows with lists of empty rows
+        spaced_opt_rows = self._intersperse_list(seq=opt_rows,
+                                                 value=self._imaginary_row(width=self._spacing))
+
+        # At last, flatten the whole kebab to combine the lists of rows into a single RenderableArray
+        rows: RenderableArray = sum(spaced_opt_rows, [])
+
+        # For each padding type, pad as necessary.
+        if self.pad_left:
+            for i in range(0, len(rows)):
+                # For each row of renderables, left-append an empty one.
+                new_tile: RenderableItem = (" ", self._color)
+                rows[i].insert(index=-1,
+                               object=new_tile)
+
+        if self.pad_right:
+            for i in range(len(rows))
+
+        return rows
+
+    def open_menu(self, x: int, y: int, console: Console) -> None:
+        is_open = True
+
+        while is_open:
+            # Run a movement handler here
+            pass
