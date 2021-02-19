@@ -10,3 +10,10 @@ Having a .tick() method on mobiles might be helpful
 ---
 
 Create unique event managers for menus, main playfield.
+
+
+---
+
+Consider separating simulation and graphical ticks. This way, we can run animations while awaiting input.
+
+Alo. & Rol. suggest making a global clock that decides what--including simulation and animations--needs to be ticked at every global tick.
