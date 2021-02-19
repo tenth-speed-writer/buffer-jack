@@ -62,15 +62,22 @@ class Mobile(Entity):
 #                          sigil="@",
 #                          name=name)
 
-
-class MemoryBounds(Static):
-    """A simple "█" impassible tile. Makes a nice enough map edge for now.
-    TODO: Create a wall which picks a border tile based on its neighbors."""
+class Wall(Static):
+    """Base class for a wall. Override name and sigil as needed.
+    TODO: Create a contextually sensitive Wall class which uses the border glyphs"""
     def __init__(self):
-        super().__init__(name="Memory Bounds",
+        super().__init__(name="Wall",
                          size=5,
                          sigil=Sigil("█", color=(230, 230, 230)),
                          passable=False)
+
+
+class MemoryBounds(Wall):
+    """A simple "█" impassible tile. Makes a nice enough map edge for now."""
+    def __init__(self):
+        super().__init__()
+        self.name = "Memory Bounds"
+        self.sigil = Sigil("█", color=(225, 225, 225))
 
 # foo = ToyBoi()
 #
