@@ -126,12 +126,72 @@ class TestPlayField(unittest.TestCase):
         assert sum(map(lambda x: isinstance(x, Cell),
                        pf.get_cells([(2, 4), (1, 1), (2, 3)])))
 
-
     def test_mobiles(self):
-        pass
+        """Create three entities, of which only one is a mobile should appear alone in .mobiles."""
+        ent1 = Static(2, Sigil("A"))
+        ent2 = Mobile(3, Sigil("B"))
+        ent3 = Entity(4, Sigil("C"))
+        pf = PlayField(3, 3)
+
+        ent1.introduce_at(0, 2, pf)
+        ent2.introduce_at(2, 1, pf)
+        ent3.introduce_at(1, 1, pf)
+
+        assert ent2 in pf.mobiles
+        assert ent1 not in pf.mobiles
+        assert ent3 not in pf.mobiles
+
+        with self.assertRaises(Exception):
+            # Reject assignment
+            pf.mobiles = [ent2]
 
     def test_statics(self):
-        pass
+        """Create three entities, of which only one is a static should appear alone in .statics."""
+        ent1 = Static(2, Sigil("A"))
+        ent2 = Mobile(3, Sigil("B"))
+        ent3 = Entity(4, Sigil("C"))
+        pf = PlayField(3, 3)
+
+        ent1.introduce_at(0, 2, pf)
+        ent2.introduce_at(2, 1, pf)
+        ent3.introduce_at(1, 1, pf)
+
+        assert ent1 in pf.statics
+        assert ent2 not in pf.statics
+        assert ent3 not in pf.statics
+
+        with self.assertRaises(Exception):
+            # Reject assignment
+            pf.statics = [ent1]
 
     def test_drawables(self):
-        pass
+        ent1 = Static(4, Sigil("X", priority=4))
+        ent2 = Entity(3, Sigil("y"))
+        ent3 = Entity(3, Sigil("z"))
+        pf = PlayField(3, 3)
+
+        ent1.introduce_at(1, 1, pf)
+        ent2.introduce_at(1, 1, pf)
+        ent3.introduce_at(2, 0, pf)
+
+        # Extract the characters from the resulting dicts for comparison
+        chars = [row["character"] for row in pf.drawables()]
+
+        # The high priority X should render, and not the lower priority y
+        assert "X" in chars
+        assert "y" not in chars
+
+    def test_tick(self):
+        """Ticking the playfield should tick entities within it."""
+        mob = Mobile(size=4,
+                     sigil=Sigil("X"),
+                     base_move_cost=50)
+        pf = PlayField(3, 3)
+        mob.introduce_at(2, 2, pf)
+
+        a = mob.cooldown
+        pf.tick()
+        b = mob.cooldown
+
+        assert a > b
+        assert a == b + 1
