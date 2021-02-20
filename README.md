@@ -24,3 +24,5 @@ Agenda:
 * Finish padding, rendering for menus.
 * Create a global tick
 * Create an animation tick cycle (maybe a TickHandler class?)
+
+--- The row width error is in the MenuOption.rows getter.
