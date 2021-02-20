@@ -1,6 +1,7 @@
 from tcod.console import Console
-from typing import Iterable, Optional, Callable, List, Tuple, Optional, TypeAlias, Sequence
+from typing import Iterable, Optional, Callable, List, Tuple, Optional, TypeAlias, MutableSequence, Deque
 from copy import deepcopy
+from collections import deque
 
 # Custom type for an RGB color tuple
 RGB = Tuple[int, int, int]
@@ -8,7 +9,7 @@ RGB = Tuple[int, int, int]
 
 # Custom types for a 2D list of tuples, each with a character and a color to be rendered.
 RenderableItem = Tuple[str, Tuple[int, int, int]]
-RenderableArray = Sequence[Sequence[Tuple[str, Tuple[int, int, int]]]]
+RenderableArray = MutableSequence[MutableSequence[Tuple[str, Tuple[int, int, int]]]]
 
 
 class MenuOption:
@@ -16,7 +17,7 @@ class MenuOption:
     @staticmethod
     def _text_dimensions(text: str) -> [int, int]:
         """Returns the minimum width and height to show a \n-delineated block of text without word wrapping."""
-        lines: List[str] = str.split("\n")
+        lines: List[str] = text.split("\n")
 
         height = len(lines)
         width = max([len(l) for l in lines])
@@ -418,25 +419,67 @@ class Menu:
         spaced_opt_rows = self._intersperse_list(seq=opt_rows,
                                                  value=self._imaginary_row(width=self._spacing))
 
-        # At last, flatten the whole kebab to combine the lists of rows into a single RenderableArray
-        rows: RenderableArray = sum(spaced_opt_rows, [])
+        # At last, flatten the whole kebab to combine the lists of rows into a single RenderableArray.
+        # We're doing a fair bit of left-pushing, so we'll use double-ended queues
+        rows: Deque[Deque[RenderableItem]] = deque(sum(spaced_opt_rows, []))
 
-        # For each padding type, pad as necessary.
-        if self.pad_left:
+        # TODO: Condense this blursed mess into local functions
+        # Append left padding
+        if self.pad_left != 0:
             for i in range(0, len(rows)):
-                # For each row of renderables, left-append an empty one.
                 new_tile: RenderableItem = (" ", self._color)
-                rows[i].insert(index=-1,
-                               object=new_tile)
+                row: Deque[RenderableItem] = deque(rows[i])
 
-        if self.pad_right:
-            for i in range(len(rows))
+                for j in range(0, self.pad_left + 1):
+                    row.appendleft(new_tile)
 
-        return rows
+        # Append right padding
+        if self.pad_right != 0:
+            for i in range(0, len(rows)):
+                new_tile: RenderableItem = (" ", self._color)
+                row: Deque[RenderableItem] = deque(rows[i])
+
+                for j in range(0, self.pad_right + 1):
+                    row.append(new_tile)
+
+        # Append top and bottom padding
+        if self.pad_top != 0:
+            # Copy a new blank tile into a list as wide as the rest of the rows
+            new_tile: RenderableItem = (" ", self._color)
+            new_row: Deque[RenderableItem] = deque([new_tile for t in range(0, len(rows[0]))])
+            rows.appendleft(new_row)
+
+        if self.pad_bottom != 0:
+            new_tile: RenderableItem = (" ", self._color)
+            new_row: Deque[RenderableItem] = deque([new_tile for t in range(0, len(rows[0]))])
+            rows.append(new_row)
+
+        # Write border, if desired
+        if self._has_border:
+            # Reference vars for special characters from the tileset
+            flat, vertical, top_left, top_right, bottom_left, bottom_right = ("═", "║", "╔", "╗", "╚", "╝")
+
+            # Top border and corners
+            rows[0] = deque([(flat, self._color) for item in rows[0]])
+            rows[0][0] = (top_left, self._color)
+            rows[0][-1] = (top_right, self._color)
+
+            # Bottom border and corners
+            rows[-1] = deque([(flat, self._color) for item in rows[-1]])
+            rows[-1][0] = (bottom_left, self._color)
+            rows[-1][-1] = (bottom_right, self._color)
+
+            # Apply side bits
+            for i in range(1, len(rows)-1):
+                rows[i][0] = (vertical, self._color)
+                rows[i][-1] = (vertical, self._color)
+
+        return [list(row) for row in rows]
 
     def open_menu(self, x: int, y: int, console: Console) -> None:
         is_open = True
 
+        print("menu opened! :)")
         while is_open:
             # Run a movement handler here
-            pass
+            is_open = False
