@@ -29,6 +29,7 @@ class Cell:
             # tuples, then return a list of sigils with that priority.
             sigils = [(entity.sigil, entity.sigil.priority) for entity in self.contents]
             max_value = max([s[1] for s in sigils])
+            print(sigils)
             top_sigils = [s[0]
                           for s in sigils
                           if s[1] == max_value]
