@@ -121,6 +121,13 @@ class Entity:
         """Set the name of this Entity. Override to add on-change logic."""
         self._name = new_name
 
+    def __on_destination_impassable(self):
+        """What to do when this entity fails to move because its move_to target is impassable.
+        In many cases a unit which fails to move this should do so quietly,
+        but there's cases where we may want to override this as any movement failure
+        would be indicative of, for instance, an AI failure."""
+        pass
+
     def move_to(self, x, y) -> None:
         """Get Cell x, y from the entity's playfield, then attempt to move the entity there.
         The entity must already have a playfield in which it exists; otherwise, use introduce_at(x, y, playfield).
@@ -137,11 +144,13 @@ class Entity:
 
         new_cell = self.playfield.get_cell(x, y)
 
-        print(new_cell.position)
-        self.cell.remove_entity(self)
-        new_cell.add_entity(self)
-
-        self.cell = new_cell
+        if new_cell.passable:
+            self.cell.remove_entity(self)
+            new_cell.add_entity(self)
+            self.cell = new_cell
+        else:
+            # Usually, fail quietly--but is overridable if we find reason.
+            self.__on_destination_impassable()
 
     def introduce_at(self, x, y, playfield) -> None:
         """As per move_to, but assumes the Entity doesn't already have a playfield.
