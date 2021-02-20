@@ -36,8 +36,17 @@ class TestEntity(ut.TestCase):
         ent = Entity(size=6, sigil=Sigil("r"))
         assert ent.passable  # Entities are passable by default
         ent.passable = False
-        assert not ent.passable  # Test t
-        # he setter method
+        assert not ent.passable
+
+        ent2 = Entity(size=3, sigil=Sigil("q"))
+        pf = PlayField(3, 3)
+
+        # Test that movement is blocked when destination contains an impassable entity
+        ent.introduce_at(1, 2, pf)
+        ent2.introduce_at(2, 2, pf)
+
+        ent2.move_to(1, 2)
+        assert ent2.position == (2, 2)
 
     def test_introduce_at(self):
         ent = _get_demo_entity()
