@@ -84,7 +84,7 @@ class TestEntity(ut.TestCase):
         ent.introduce_at(2, 2, pf)
 
         assert isinstance(ent.playfield, PlayField)
-        assert ent in PlayField.entities
+        assert ent in pf.entities
 
     def test_sigil(self):
         ent = _get_demo_entity()
