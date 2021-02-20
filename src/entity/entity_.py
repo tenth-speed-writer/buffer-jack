@@ -25,6 +25,10 @@ class Entity:
                  parent_playfield: Optional[object] = None,
                  position: Optional[Tuple[int, int]] = None,
                  passable: bool = True):
+
+        if not 0 <= size <= 10:
+            raise ValueError("Size must be 0 <= size <= 10. Given {}".format(str(size)))
+
         self._sigil = sigil
         self._size = size
         self._position = position
