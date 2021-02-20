@@ -52,6 +52,9 @@ class Sigil:
             raise ValueError("Cannot create sigil; {} is not a valid CP437 character."
                              .format(character))
         self.character = character
+
+        if not priority in (1, 2, 3, 4, 5):
+            raise ValueError("Priority must be between 1 and 5")
         self._priority = priority
 
         # Cast color to a list, as it should be a mutable attribute,
