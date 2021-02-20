@@ -17,7 +17,7 @@ class Cell:
         self._y = y
 
         # Cast contents to a list regardless of their type
-        self.contents = [c for c in contents]
+        self._contents = [c for c in contents]
 
     @property
     def sigils(self) -> List[Sigil]:
@@ -29,7 +29,7 @@ class Cell:
             # tuples, then return a list of sigils with that priority.
             sigils = [(entity.sigil, entity.sigil.priority) for entity in self.contents]
             max_value = max([s[1] for s in sigils])
-            print(sigils)
+
             top_sigils = [s[0]
                           for s in sigils
                           if s[1] == max_value]
@@ -41,6 +41,10 @@ class Cell:
             return []
 
     @property
+    def contents(self) -> List[Entity]:
+        return self._contents
+
+    @property
     def position(self) -> Tuple[int, int]:
         """Returns own position as (x, y)."""
         return self._x, self._y
@@ -48,11 +52,9 @@ class Cell:
     def add_entity(self, entity: Entity) -> None:
         """Appends a new entity to this cell's contents, assuming it's not
         already there, and pairs that entity with this cell."""
-        if not self.contents or entity not in self.contents:
-            # print("{} /// {}".format(str(entity), str(self.contents)))
-            self.contents = [entity]
-        elif entity not in self.contents:
-            self.contents = self.contents.append(entity)
+
+        if not entity in self.contents:
+            self._contents = [] + self._contents + [entity]
         else:
             print("Warning: tried to move Entity {} into a cell that it's already in."
                   .format(entity.name))
@@ -60,7 +62,7 @@ class Cell:
     def remove_entity(self, entity: Entity) -> None:
         """Removes an entity from .contents if it exists, or prints a warning if not."""
         if entity in self.contents:
-            self.contents = self.contents.remove(entity)
+            self._contents = self._contents.remove(entity)
         else:
             print("Can't remove entity {} from cell x:{}, y:{} as it isn't there!"
                   .format(entity.name,
@@ -74,9 +76,10 @@ class Cell:
     @property
     def passable(self) -> bool:
         """If this cell is empty, or it's not empty but none of its contents are impassable, then it's passable."""
+        #print([c for c in self.contents])
         if not self.contents:
             return True
-        elif False in [c.passable for c in self.contents]:
+        elif sum([c.passable for c in self.contents]) != len(self.contents):
             return False
         else:
             return True

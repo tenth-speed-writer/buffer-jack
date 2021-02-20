@@ -24,16 +24,34 @@ class TestCell(unittest.TestCase):
         assert ent3.sigil not in sigs
 
     def test_position(self):
-        pass
+        pf = PlayField(5, 5)
+        c = pf.get_cell(x=2, y=3)
 
-    def test_add_entity(self):
-        pass
+        assert c.position == (2, 3)
 
-    def test_remove_entity(self):
-        pass
+        with self.assertRaises(Exception):
+            # Should not accept reassignment of .position
+            c.position = 2, 2
 
     def test_passable(self):
-        pass
+        ent1 = Entity(4, Sigil("A"))
+        ent2 = Entity(3, Sigil("B"))
+        ent3 = Entity(3, Sigil("C"))
+
+        pf = PlayField(3, 3)
+        ent1.introduce_at(2, 2, pf)
+        ent2.introduce_at(2, 2, pf)
+        ent3.introduce_at(2, 2, pf)
+
+        c: Cell = pf.get_cell(2, 2)
+        assert c.passable
+
+        # Making any of the contents impassible should make the cell impassable
+        ent2.passable = False
+        assert not c.passable
+
+        c.remove_entity(ent2)
+        assert c.passable
 
     def test_playfield(self):
         pass
