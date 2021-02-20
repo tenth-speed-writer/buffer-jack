@@ -111,6 +111,14 @@ class Entity:
         TODO: Make this have an impact somewhere in gameplay."""
         return self._size
 
+    @size.setter
+    def size(self, s: int) -> None:
+        """Assigns a new size value, assuming it is an integer in range 0 <= s <= 10."""
+        if 0 <= s <= 10:
+            self._size = s
+        else:
+            raise ValueError("Size to be assigned must be in range 0 <= size <= 10, given {}".format(str(s)))
+
     @property
     def name(self) -> str:
         """Return the name of this entity. Override for contextual name generation."""
