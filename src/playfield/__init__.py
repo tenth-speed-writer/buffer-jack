@@ -48,7 +48,7 @@ class Cell:
         """Appends a new entity to this cell's contents, assuming it's not
         already there, and pairs that entity with this cell."""
         if not self.contents or entity not in self.contents:
-            print("{} /// {}".format(str(entity), str(self.contents)))
+            # print("{} /// {}".format(str(entity), str(self.contents)))
             self.contents = [entity]
         elif entity not in self.contents:
             self.contents = self.contents.append(entity)
