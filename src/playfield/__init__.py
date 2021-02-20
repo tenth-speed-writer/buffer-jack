@@ -7,7 +7,6 @@ from src.entity.entities import Mobile, Static
 from typing import Optional, List, Tuple, Dict
 from src.sigil import Sigil
 
-
 class Cell:
     """A collection of entities that exist in the same place on the PlayField."""
     def __init__(self, parent, x: int, y: int,
@@ -147,7 +146,8 @@ class PlayField:
     def height(self):
         return self._height
 
-    def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> List[Cell]:
+    def get_cells(self,
+                  cells: Optional[Iterable[Tuple[int, int]]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
         if cells:
             # If specified, return the cells corresponding to the given (x, y) tuples
