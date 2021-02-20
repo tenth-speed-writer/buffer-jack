@@ -95,13 +95,14 @@ class MenuOption:
             return [char_to_tuple(c) for c in line]
 
         def pad_string(line: str):
-            """Center-align a specified string based on own non-padded width."""
-            text_width = self._width - 2*self._pad_horizontal
+            """Center-align a specified string based on own width."""
+            text_width = len(line)
+            tgt_width = self._width
             new_line = deepcopy(line)
 
             # Pad it left or right based on evens/odds.
             # Stagger the count by 1 so the modulus trick doesn't throw a div-by-zero error
-            for j in range(1, text_width + 1):
+            for j in range(1, tgt_width - text_width + 2):
                 if j % 2:
                     new_line = " " + new_line
                 else:
@@ -110,31 +111,38 @@ class MenuOption:
             return new_line
 
         # Get text, split it, and cast it to character lists. Also pad width.
-        str_lines = [pad_string(s) for s in self._text.split("\n")]
-        lines = [list(l) for l in str_lines]
+        str_lines: List[str] = [pad_string(s) for s in self._text.split("\n")]
+        lines: List[List[str]] = [[char for char in l] for l in str_lines]
 
         # Pad empty string rows to top and bottom to match height.
         # Iterator is offset by 1 to avoid div-by-0 error in the modulus
         height_diff = self._height - len(lines)
         for i in range(1, height_diff + 1):
-            new_row = [" " for char in lines[0]]
+            new_row: List[str] = [" " for j in range(0, len(lines[0]))]
             if i % 2:
-                lines = lines + new_row
+                lines = lines + [new_row]
             else:
-                lines = new_row + lines
+                lines = [new_row] + lines
+        print([len(l) for l in lines])
+        print(lines)
+
+        # TODO: Rewrite this padding business more sensibly
 
         # Apply margins and border, if appropriate
         if self._pad_vertical:
             for i in range(0, self._pad_vertical + 1):
                 # Pad top and bottom by one full row per pad_vertical
-                blank_row = [" " for i in range(0, self._width + 2*self._pad_horizontal)]
-                lines = blank_row + lines + blank_row
+                blank_row: List[str] = [" " for i in range(0, self._width + 2*self._pad_horizontal)]
+                lines.insert(0, blank_row)
+                lines.append(blank_row)
+        #
+        # if self._pad_horizontal:
+        #     for i in range(0, len(lines)):
+        #         # Pad left and right once each per pad_horizontal
+        #         lines[i]: str = " " + str(lines[i])
+        #         lines[i]: str = lines[i] + " "
 
-        if self._pad_horizontal:
-            for i in range(0, len(lines)):
-                # Pad left and right once each per pad_horizontal
-                lines[i] = " " + lines[i] + " "
-
+        print(len(lines))
         if self._has_border:
             # If this MenuOption has a border, construct and write that into the edge characters.
             # This should, as per value testing, only run if there's padding to safely write in.
@@ -146,13 +154,9 @@ class MenuOption:
             new_bottom[0] = "└"
             new_bottom[-1] = "┘"
 
-            # First, apply horizontal borders to each line
-            for i in range(0, len(lines)):
-                lines[i][0] = "│"
-                lines[i][-1] = "│"
+            # Append the top and bottom borders
+            lines = new_top + lines[1:len(lines):1] + new_bottom
 
-            # Then append the top and bottom borders
-            lines = new_top + lines + new_bottom
         return [line_to_tuples(l) for l in lines]
 
     @property
@@ -396,6 +400,7 @@ class Menu:
         # Remain aware that opt_rows is a list of these lists, and we'll eventually flatten them.
         opt_rows: List[RenderableArray] = [c.rows for c in self._contents]
         row_width: int = len(opt_rows[0][0])
+        print("opt_row lengths: {}".format(str([len(el) for el in opt_rows])))
 
         # Test that contents are of the correct width for this Menu
         left_pad = self._padding[3]
