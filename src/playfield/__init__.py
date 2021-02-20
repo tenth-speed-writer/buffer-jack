@@ -96,6 +96,8 @@ class PlayField:
         :param height: Height of the PlayField, in tiles
         :param contents: A list of (x, y, entity) tuples containing entities and where to spawn them.
         """
+        if width < 2 or height < 2:
+            raise ValueError("Width and height must be at least 2 each!")
         self._width = width
         self._height = height
 
