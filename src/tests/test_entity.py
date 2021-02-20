@@ -36,7 +36,8 @@ class TestEntity(ut.TestCase):
         ent = Entity(size=6, sigil=Sigil("r"))
         assert ent.passable  # Entities are passable by default
         ent.passable = False
-        assert not ent.passable  # Test the setter method
+        assert not ent.passable  # Test t
+        # he setter method
 
     def test_introduce_at(self):
         ent = _get_demo_entity()
@@ -63,6 +64,7 @@ class TestEntity(ut.TestCase):
         """Test getter and setter for parent cell"""
         ent = Entity(size=5, sigil=Sigil("4"))
         pf = PlayField(4, 4)
+        ent.introduce_at(2, 3, pf)
 
         assert isinstance(ent.cell, Cell)
         assert ent in ent._parent_cell.contents
@@ -70,6 +72,7 @@ class TestEntity(ut.TestCase):
     def test_playfield(self):
         ent = Entity(size=5, sigil=Sigil("4"))
         pf = PlayField(4, 4)
+        ent.introduce_at(2, 2, pf)
 
         assert isinstance(ent.playfield, PlayField)
         assert ent in PlayField.entities
