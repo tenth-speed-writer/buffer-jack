@@ -57,6 +57,10 @@ class Sigil:
             raise ValueError("Priority must be between 1 and 5")
         self._priority = priority
 
+        # Range check the specified color values
+        if sum(0 <= c <= 255 for c in color) != 3:
+            raise ValueError("All color values must be integers in 0-255. Got {}".format(str(color)))
+
         # Cast color to a list, as it should be a mutable attribute,
         # but also keep the original color in case we want to clear it.
         self._color = [c for c in color]
