@@ -17,3 +17,10 @@ Create unique event managers for menus, main playfield.
 Consider separating simulation and graphical ticks. This way, we can run animations while awaiting input.
 
 Alo. & Rol. suggest making a global clock that decides what--including simulation and animations--needs to be ticked at every global tick.
+
+---
+
+Agenda:
+* Finish padding, rendering for menus.
+* Create a global tick
+* Create an animation tick cycle (maybe a TickHandler class?)
