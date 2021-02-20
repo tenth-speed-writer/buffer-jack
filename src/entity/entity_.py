@@ -169,7 +169,7 @@ class Entity:
 
         cell = playfield.get_cell(x=x, y=y)
         cell.add_entity(self)
-        print(cell.contents)
+
         self.cell = cell
 
     @property
