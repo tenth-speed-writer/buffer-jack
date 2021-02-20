@@ -97,8 +97,8 @@ class PlayField:
         :param height: Height of the PlayField, in tiles
         :param contents: A list of (x, y, entity) tuples containing entities and where to spawn them.
         """
-        self.width = width
-        self.height = height
+        self._width = width
+        self._height = height
 
         # Iteratively initiate the PlayField with empty Cells,
         # populating the _field variable by the row.
@@ -106,13 +106,13 @@ class PlayField:
 
         self._animations: List = []
 
-        for y in range(0, self.height):
+        for y in range(0, self._height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
             row = [Cell(x=x,
                         y=y,
                         parent=self)
-                   for x in range(0, self.width)]
+                   for x in range(0, self._width)]
 
             # Then append it to the field.
             self._field += [row]
@@ -124,12 +124,12 @@ class PlayField:
     @property
     def shape(self) -> Tuple[int, int]:
         """Returns the shape of this playfield in terms of (width, height)"""
-        return self.width, self.height
+        return self._width, self._height
 
     def __str__(self) -> str:
         """When printed as a string, the playfield will <> itself and state its shape."""
-        return "<PlayField - Shape: {}, {}>".format(str(self.width),
-                                                    str(self.height))
+        return "<PlayField - Shape: {}, {}>".format(str(self._width),
+                                                    str(self._height))
 
     def get_cell(self, x: int, y: int) -> Cell:
         """Returns the specified Cell, so long x and y are within bounds."""
@@ -138,6 +138,14 @@ class PlayField:
         else:
             raise ValueError("Location (x:{}, y:{}) is out of bounds!"
                              .format(str(x), str(y)))
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
 
     def get_cells(self, cells: Optional[Tuple[int, int]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
@@ -173,8 +181,6 @@ class PlayField:
                      for c in cells
                      if c.contents and len(c.contents) != 0]
         return drawables
-
-    from tcod.console import Console
 
     @property
     def entities(self) -> List[Entity]:
