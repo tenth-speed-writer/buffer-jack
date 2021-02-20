@@ -1,5 +1,5 @@
 from tcod.console import Console
-from typing import Iterable, Optional, Callable, List, Tuple, Optional, TypeAlias, MutableSequence, Deque
+from typing import Iterable, Optional, Callable, List, Tuple, Optional, MutableSequence, Deque
 from copy import deepcopy
 from collections import deque
 
