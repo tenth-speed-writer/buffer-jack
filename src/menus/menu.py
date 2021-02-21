@@ -9,7 +9,7 @@ RGB = Tuple[int, int, int]
 
 # Custom types for a 2D list of tuples, each with a character and a color to be rendered.
 RenderableItem = Tuple[str, Tuple[int, int, int]]
-RenderableArray = MutableSequence[MutableSequence[Tuple[str, Tuple[int, int, int]]]]
+RenderableArray = MutableSequence[MutableSequence[RenderableItem]]
 
 
 class MenuOption:
@@ -89,10 +89,12 @@ class MenuOption:
     def rows(self) -> RenderableArray:
         """Renders this menu option as a list of lists of (char, color_tuple), including margins/border/padding"""
         def char_to_tuple(char: str):
-            return char, self._color
+            return char, self.color
 
-        def line_to_tuples(line: str):
-            return [char_to_tuple(c) for c in line]
+        def lines_to_tuples(lines_: List[List[str]]):
+            return [[char_to_tuple(char)
+                     for char in row]
+                    for row in lines_]
 
         def pad_string(line: str):
             """Center-align a specified string based on own width."""
@@ -102,7 +104,8 @@ class MenuOption:
 
             # Pad it left or right based on evens/odds.
             # Stagger the count by 1 so the modulus trick doesn't throw a div-by-zero error
-            for j in range(1, tgt_width - text_width + 2):
+            # Developer confession: I don't know why "+3" fixes this.
+            for j in range(1, tgt_width - text_width + 3):
                 if j % 2:
                     new_line = " " + new_line
                 else:
@@ -123,8 +126,6 @@ class MenuOption:
                 lines = lines + [new_row]
             else:
                 lines = [new_row] + lines
-        print([len(l) for l in lines])
-        print(lines)
 
         # TODO: Rewrite this padding business more sensibly
 
@@ -142,10 +143,16 @@ class MenuOption:
         #         lines[i]: str = " " + str(lines[i])
         #         lines[i]: str = lines[i] + " "
 
-        print(len(lines))
         if self._has_border:
             # If this MenuOption has a border, construct and write that into the edge characters.
             # This should, as per value testing, only run if there's padding to safely write in.
+
+            # Insert side borders
+            for i in range(0, len(lines)):
+                lines[i][0] = "│"
+                lines[i][-1] = "│"
+
+            # Generate and append top and bottom borders
             new_top = ["─" for i in lines[0]]
             new_top[0] = "┌"
             new_top[-1] = "┐"
@@ -154,10 +161,11 @@ class MenuOption:
             new_bottom[0] = "└"
             new_bottom[-1] = "┘"
 
-            # Append the top and bottom borders
-            lines = new_top + lines[1:len(lines):1] + new_bottom
-
-        return [line_to_tuples(l) for l in lines]
+            lines[0] = new_top
+            lines[-1] = new_bottom
+            print(lines)
+            # Convert characters to (char, (r, g, b)) format
+            return lines_to_tuples(lines)
 
     @property
     def size(self) -> Tuple[int, int]:
@@ -316,6 +324,8 @@ class Menu:
     @color.setter
     def color(self, new_rgb: RGB) -> None:
         """Sets the color of this MenuItem, assuming it's a tuple of 3 integers in range 0-255."""
+        if not len(new_rgb) == 3:
+            raise ValueError("new_rgb must be a sequence of length 3 (given {})".format(str(new_rgb)))
         for c in new_rgb:
             if not 0 <= c <= 255:
                 raise ValueError("RGB values must be in range 0-255. Got {}".format(str(new_rgb)))
@@ -331,7 +341,12 @@ class Menu:
         self._contents = []
 
     def add_option(self, opt: MenuOption):
+        """Add a menu option to the end of this menu's list of contents."""
         self._contents = [] + self._contents + [opt]
+
+    def remove_option(self, opt: MenuOption):
+        if opt in self._contents:
+            self._contents.remove(opt)
 
     def __init__(self,
                  width: int, height: int,
