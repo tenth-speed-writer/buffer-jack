@@ -2,7 +2,6 @@ from typing import Optional, Iterable, Tuple, List, Dict
 from src.entity import Entity
 from src.entity.entities import Static, Mobile
 from tcod.event import EventDispatch
-from src.inputs import GameplayHandler
 from .cell import Cell
 
 
@@ -10,8 +9,8 @@ class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
-                 contents: Optional[Iterable[Tuple[int, int, Entity]]] = (),
-                 dispatch: EventDispatch = GameplayHandler):
+                 dispatch: EventDispatch,
+                 contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
         """
         Initialize a new PlayField of given dimensions, optionally with an iterable of initial entities.
 
