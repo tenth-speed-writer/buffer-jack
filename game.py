@@ -15,10 +15,23 @@ def main():
                                           charmap=tcod.tileset.CHARMAP_CP437)
 
     # Create a new window/SDL context
+
+
     with tcod.context.new(width=WIDTH,
                           height=HEIGHT,
                           sdl_window_flags=FLAGS,
                           tileset=tileset) as context:
+        # Render the main menu
+        console = context.new_console(order="F")
+        menu = Menu(width=console.width - 2,  # -2 to account for the border we've already drawn
+                    height=console.height - 2)
+
+        menu.add_option(MenuOption(text="Launch\nGame",
+                                   width=min(console.width - 6, 14),  # Ideally 14, but shrink to fit if needed.
+                                   height=5,
+                                   on_select=lambda x: print("Player clicked the button!"),
+                                   color=(130, 220, 130)))
+        menu.open_menu(1, 1, console, context)
         while True:
             console = context.new_console(order="F")
             console.draw_frame(x=0, y=0,
@@ -26,43 +39,10 @@ def main():
                                height=console.height,
                                title="BUFFER.JACK()")
 
-            opt1 = MenuOption("Howdy!",
-                              width=12,
-                              height=5,
-                              on_select=lambda x: print("Howdy!"),
-                              subtext="It says howdy",
-                              pad_horizontal=1,
-                              pad_vertical=1,
-                              color=(200, 255, 200))
+        # HANDLING MENUS:
+        # Draw each menu on top of one another for each menu in a menus variable,
+        # then pass control of the handler to that menu's handler
 
-            opt2 = MenuOption("Doody!",
-                              width=12,
-                              height=5,
-                              on_select=lambda x: print("Doody!"),
-                              subtext="It says doody",
-                              pad_horizontal=1,
-                              pad_vertical=1,
-                              color=(200, 255, 200))
-
-            print("Opt width, height: {},{}".format(str(opt1._width), str(opt1._height)))
-            menu = Menu(30, 30)
-            menu.add_option(opt1)
-            menu.add_option(opt2)
-
-            menu.add_option(MenuOption(text="Launch\nGame",
-                                       width=console.width-16,
-                                       height=5,
-                                       on_select=lambda x: print("Player clicked the button!"),
-                                       color=(130, 220, 130)))
-            menu.open_menu(5, 5, console)
-
-            # menu_renderable = menu.renderable()
-            # for y in range(0, len(menu_renderable)):
-            #     for x in range(0, len(menu_renderable[y])):
-            #         char, color = menu_renderable[x][y]
-            #         console.print(x+1, y+1, string=char, fg=color)
-
-            context.present(console)
 
 
 

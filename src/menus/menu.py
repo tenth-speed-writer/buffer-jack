@@ -1,5 +1,6 @@
 import tcod
 from tcod.console import Console
+from tcod.context import Context
 from typing import Iterable, Optional, Callable, List, Tuple, Optional, MutableSequence, Deque
 from copy import deepcopy
 from collections import deque
@@ -78,7 +79,7 @@ class MenuOption:
         self._width = width
         self._height = height
         self._subtext = subtext
-        self._on_select = on_select
+        self.on_select = on_select
         self._pad_horizontal = pad_horizontal
         self._pad_vertical = pad_vertical
         self._has_border = has_border
@@ -227,9 +228,37 @@ class MenuOption:
 
 
 class MenuInputHandler(tcod.event.EventDispatch):
-    def __init__(self, menu: Menu):
+    def __init__(self, menu):
         self._menu = menu
         super().__init__()
+
+    def cmd_close_menu(self):
+        """Set its .is_open to False, breaking the menu loop."""
+        self._menu.close()
+
+    def ev_keydown(self, event: tcod.event.KeyDown):
+        up_keys = [tcod.event.K_UP, tcod.event.K_KP_8, tcod.event.K_KP_PLUS]
+        down_keys = [tcod.event.K_DOWN, tcod.event.K_KP_2, tcod.event.K_KP_MINUS]
+        select_keys = [tcod.event.K_SPACE,
+                       tcod.event.K_RETURN,
+                       tcod.event.K_RETURN2,
+                       tcod.event.K_KP_ENTER]
+        exit_keys = [tcod.event.K_ESCAPE]
+
+        # TODO: Add page up/page down for multi-entity skips
+        if event.sym in up_keys:
+            self._menu.change_selection(PositionDelta(dx=0, dy=-1))
+        elif event.sym in down_keys:
+            self._menu.change_selection(PositionDelta(dx=0, dy=1))
+        elif event.sym in select_keys:
+            opt: MenuOption = self._menu.contents[self._menu.selected]
+            opt.on_select(None)
+        elif event.sym in exit_keys:
+            # TODO: Tell the menu to close
+            self.cmd_close_menu()
+
+    def ev_quit(self, event: tcod.event.Quit):
+        SystemExit()
 
 
 class Menu:
@@ -416,6 +445,9 @@ class Menu:
         # The index of the currently selected menu_option.
         self._selected: int = 0
 
+        # Assigns a flag to be used by the open_menu logic to eventually break the menu loop
+        self._is_open = False
+
     @property
     def selected(self):
         """Returns the index of the currently selected menu option."""
@@ -436,8 +468,10 @@ class Menu:
 
         self._selected = y1
 
+    def close(self):
+        self._is_open = False
 
-    def open_menu(self, x: int, y: int, console: Console) -> None:
+    def render_menu(self, x0: int, y0: int, console: Console) -> None:
         def print_rows_at_position(x_0: int, y_0: int, opt_rows: RenderableArray):
             for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
                 for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
@@ -447,48 +481,57 @@ class Menu:
                                   y=y_0 + dy,
                                   string=char,
                                   fg=color)
+        if self._has_border:
+            # TODO: Add menu title here
+            console.draw_frame(x, y, self._width, self._height)
+            h = self._height - 2  # Effective width and height after drawing the border
+            w = self._width - 2
+        else:
+            h = self._height
+            w = self._width
 
-        is_open = True
-        selector = 0
-        while is_open:
-            # Draw and accommodate for border, if necessary
-            if self._has_border:
-                # TODO: Add menu title here
-                console.draw_frame(x, y, self._width, self._height)
-                h = self._height - 2  # Effective width and height after drawing the border
-                w = self._width - 2
-            else:
-                h = self._height
-                w = self._width
+        # Print menu contents
+        # TODO: Replace this with robust handling for opening empty menus
+        if not self.contents:
+            raise Exception("Tried to open an empty menu.")
 
-            # Print menu contents
-            if self.contents:
-                # Left offset should be left pad, plus 1/2 rounded down of half of the diff
-                # between working width and option width. -1 'cause we want corresponding index.
-                # TODO: Make .width/.height getters or find a more graceful way of doing this.
+        # Left offset should be left pad, plus 1/2 rounded down of half of the diff
+        # between working width and option width. -1 'cause we want corresponding index.
+        # TODO: Make .width/.height getters or find a more graceful way of doing this.
 
-                # Determine the x position of the menu options and the first y position
-                x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
-                y0 = self.pad_top
-                locations = [(x0, y0)]  # Valid top left corner tiles for drawing MenuItems
+        # Determine the x position of the menu options and the first y position
+        x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
+        y0 = self.pad_top
+        locations = [(x0, y0)]  # Valid top left corner tiles for drawing MenuItems
 
-                dy = self.spacing + self.contents[0]._height  # Determine how many y steps are between each top left
-                yi = y0 + dy  # The first new step will be dy steps down
+        dy = self.spacing + self.contents[0]._height  # Determine how many y steps are between each top left
+        yi = y0 + dy  # The first new step will be dy steps down
 
-                while (yi + dy) < h:
-                    locations.append((x0, yi))  # As will each additional one.
-                    yi += dy
+        while (yi + dy) < h:
+            locations.append((x0, yi))  # As will each additional one.
+            yi += dy
 
-                num_opts = len(locations)
-                if num_opts >= len(self.contents):  # If no more contents than places to put them
-                    opts = self.contents  # Just render them all
-                else:  # Otherwise
-                    opts = self.contents[selector:selector + num_opts]  # Render as many as we can
+        num_opts = len(locations)
+        if num_opts >= len(self.contents):  # If no more contents than places to put them
+            opts = self.contents  # Just render them all
+        else:  # Otherwise
+            opts = self.contents[self._selected + num_opts]  # Render as many as we can
 
-                for i in range(0, len(opts)):
-                    rows = opts[i].rows
-                    pos = locations[i]
-                    print_rows_at_position(x_0=pos[0], y_0=pos[1], opt_rows=rows)
+        for i in range(0, len(opts)):
+            rows = opts[i].rows
+            pos = locations[i]
+            print_rows_at_position(x_0=pos[0], y_0=pos[1], opt_rows=rows)
 
-            # Run a movement handler here
-            is_open = False
+    # def open_menu(self, x: int, y: int, console: Console, context: Context) -> None:
+    #     self._is_open = True
+    #     self._selected = 0
+    #     handler = MenuInputHandler(menu=self)
+    #
+    #     while self._is_open:
+    #         print(self._is_open)
+    #         # Draw and accommodate for border, if necessary
+    #
+    #
+    #         # Parse events since last tick
+    #         for event in tcod.event.get():
+    #             handler.dispatch(event)
