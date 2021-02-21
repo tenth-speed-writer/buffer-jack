@@ -1,9 +1,6 @@
 import tcod
-from tcod.console import Console
-from tcod.context import Context
-from typing import Iterable, Optional, Callable, List, Tuple, Optional, MutableSequence, Deque
+from typing import Iterable, Callable, List, Tuple, Optional, MutableSequence
 from copy import deepcopy
-from collections import deque
 from tcod.console import Console
 from math import floor
 from src.inputs import PositionDelta
@@ -483,7 +480,7 @@ class Menu:
                                   fg=color)
         if self._has_border:
             # TODO: Add menu title here
-            console.draw_frame(x, y, self._width, self._height)
+            console.draw_frame(x0, y0, self._width, self._height)
             h = self._height - 2  # Effective width and height after drawing the border
             w = self._width - 2
         else:
