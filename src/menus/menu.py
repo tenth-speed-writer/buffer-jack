@@ -195,7 +195,8 @@ class MenuOption:
     @color.setter
     def color(self, new_rgb: RGB) -> None:
         """Sets the color of this MenuItem, assuming it's a tuple of 3 integers in range 0-255."""
-        for c in new_rgb:
+        r, g, b = new_rgb
+        for c in (r, g, b):
             if not 0 <= c <= 255:
                 raise ValueError("RGB values must be in range 0-255. Got {}".format(str(new_rgb)))
         self._color = new_rgb
