@@ -37,7 +37,7 @@ class Cell:
 
     @property
     def contents(self) -> List[Entity]:
-        return self._contents
+        return self._contents if self._contents else []
 
     @property
     def position(self) -> Tuple[int, int]:
@@ -48,8 +48,10 @@ class Cell:
         """Appends a new entity to this cell's contents, assuming it's not
         already there, and pairs that entity with this cell."""
 
-        if entity not in self.contents:
-            self._contents = [] + self._contents + [entity]
+        if not self.contents:
+            self._contents = [entity]
+        elif entity not in self.contents:
+            self._contents.append(entity)
         else:
             print("Warning: tried to move Entity {} into a cell that it's already in."
                   .format(entity.name))
