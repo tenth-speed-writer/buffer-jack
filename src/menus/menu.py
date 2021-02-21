@@ -182,30 +182,10 @@ class MenuOption:
         """Return the current padding applied to the top and bottom of the MenuOption."""
         return self._pad_vertical
 
-    @vertical_padding.setter
-    def vertical_padding(self, new_value: int) -> None:
-        """Assigns a new _pad_vertical value, if it's a valid vertical padding amount."""
-        if new_value < 0:
-            raise ValueError("New vertical padding size must be no less than zero, given {}".format(str(new_value)))
-        elif new_value == 0 and self._has_border:
-            raise ValueError("Cannot set vertical padding to 0 when .has_border = True!")
-        else:
-            self._pad_vertical = new_value
-
     @property
     def horizontal_padding(self) -> int:
         """Return the current padding applied to the left and right of the MenuOption."""
         return self._pad_horizontal
-
-    @horizontal_padding.setter
-    def horizontal_padding(self, new_value: int) -> None:
-        """Assigns a new _pad_horizontal value, if it's a valid horizontal padding amount."""
-        if new_value < 0:
-            raise ValueError("New horizontal padding size must be no less than zero, given {}".format(str(new_value)))
-        elif new_value == 0 and self._has_border:
-            raise ValueError("Cannot set horizontal padding to 0 when .has_border = True!")
-        else:
-            self._pad_horizontal = new_value
 
     @property
     def color(self) -> RGB:
