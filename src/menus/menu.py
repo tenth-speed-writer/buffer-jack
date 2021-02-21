@@ -201,6 +201,14 @@ class MenuOption:
                 raise ValueError("RGB values must be in range 0-255. Got {}".format(str(new_rgb)))
         self._color = new_rgb
 
+    @property
+    def subtext(self) -> str:
+        return self._subtext
+
+    @subtext.setter
+    def subtext(self, st: str):
+        self._subtext = st
+
 
 class Menu:
     """Base class for a menu. Subclass to add specific functionality or context/console/game awareness."""
