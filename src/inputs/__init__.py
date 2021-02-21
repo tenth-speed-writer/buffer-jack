@@ -1,4 +1,4 @@
-__all__ = ["is_movement_key", "get_position_delta", "PositionDelta"]
+__all__ = ["PositionDelta", "GameplayHandler"]
 
 #import tcod
 from .position_delta import PositionDelta
