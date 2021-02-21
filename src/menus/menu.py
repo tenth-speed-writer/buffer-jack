@@ -2,10 +2,11 @@ from tcod.console import Console
 from typing import Iterable, Optional, Callable, List, Tuple, Optional, MutableSequence, Deque
 from copy import deepcopy
 from collections import deque
+from tcod.console import Console
+from math import floor
 
 # Custom type for an RGB color tuple
 RGB = Tuple[int, int, int]
-
 
 # Custom types for a 2D list of tuples, each with a character and a color to be rendered.
 RenderableItem = Tuple[str, Tuple[int, int, int]]
@@ -14,6 +15,7 @@ RenderableArray = MutableSequence[MutableSequence[RenderableItem]]
 
 class MenuOption:
     """Represents a single row in a menu. Is able to render itself as a list of strings."""
+
     @staticmethod
     def _text_dimensions(text: str) -> [int, int]:
         """Returns the minimum width and height to show a \n-delineated block of text without word wrapping."""
@@ -44,7 +46,8 @@ class MenuOption:
                  pad_horizontal: int = 1,
                  pad_vertical: int = 1,
                  has_border: bool = True,
-                 color: RGB = (240, 240, 240)):
+                 color: RGB = (240, 240, 240),
+                 on_highlight_icon: str = "°"):
         """
         Initializes a menu_option with specified parameters. Override and call
         via super().__init__() to make default values for custom subclasses.
@@ -80,6 +83,8 @@ class MenuOption:
 
         self._color = color
 
+        self._highlight_icon = on_highlight_icon
+
     @property
     def text(self):
         """Returns the primary text for this menu option."""
@@ -88,6 +93,7 @@ class MenuOption:
     @property
     def rows(self) -> RenderableArray:
         """Renders this menu option as a list of lists of (char, color_tuple), including margins/border/padding"""
+
         def char_to_tuple(char: str):
             return char, self.color
 
@@ -130,12 +136,12 @@ class MenuOption:
         # TODO: Rewrite this padding business more sensibly
 
         # Apply margins and border, if appropriate
-        if self._pad_vertical:
-            for i in range(0, self._pad_vertical + 1):
-                # Pad top and bottom by one full row per pad_vertical
-                blank_row: List[str] = [" " for i in range(0, self._width + 2*self._pad_horizontal)]
-                lines.insert(0, blank_row)
-                lines.append(blank_row)
+        # if self._pad_vertical:
+        #     for i in range(0, self._pad_vertical + 1):
+        #         # Pad top and bottom by one full row per pad_vertical
+        #         blank_row: List[str] = [" " for i in range(0, self._width + 2*self._pad_horizontal)]
+        #         lines.insert(0, blank_row)
+        #         lines.append(blank_row)
         #
         # if self._pad_horizontal:
         #     for i in range(0, len(lines)):
@@ -163,7 +169,7 @@ class MenuOption:
 
             lines[0] = new_top
             lines[-1] = new_bottom
-            print(lines)
+            # print(lines)
             # Convert characters to (char, (r, g, b)) format
             return lines_to_tuples(lines)
 
@@ -398,97 +404,58 @@ class Menu:
         else:
             self._color = color
 
-    def renderable(self) -> RenderableArray:
-        """Returns the entire menu as a 2D height-by-width RenderableArray."""
-        # If we generated the options correctly, row_width will be the same for all rows returned.
-        # Remain aware that opt_rows is a list of these lists, and we'll eventually flatten them.
-        opt_rows: List[RenderableArray] = [c.rows for c in self._contents]
-        row_width: int = len(opt_rows[0][0])
-        print("opt_row lengths: {}".format(str([len(el) for el in opt_rows])))
-
-        # Test that contents are of the correct width for this Menu
-        left_pad = self._padding[3]
-        right_pad = self._padding[1]
-        if row_width != self._width - (left_pad + right_pad):
-            raise ValueError("Row width must match menu width minus padding.\n" +
-                             "width: {}, row_width: {}, padding: L-{} + R-{}"
-                             .format(str(self._width),
-                                     str(row_width),
-                                     str(left_pad),
-                                     str(right_pad)))
-
-        # Test that all rows are of equal length to the first.
-        for row in opt_rows:
-            if len(row[0]) != row_width:
-                raise ValueError("Rows must be of equal width. First row: {} tiles. This row: {} tiles."
-                                 .format(str(row_width),
-                                         str(len(row[0]))))
-
-        # Intersperse the lists of menu item rows with lists of empty rows
-        spaced_opt_rows = self._intersperse_list(seq=opt_rows,
-                                                 value=self._imaginary_row(width=self._spacing))
-
-        # At last, flatten the whole kebab to combine the lists of rows into a single RenderableArray.
-        # We're doing a fair bit of left-pushing, so we'll use double-ended queues
-        rows: Deque[Deque[RenderableItem]] = deque(sum(spaced_opt_rows, []))
-
-        # TODO: Condense this blursed mess into local functions
-        # Append left padding
-        if self.pad_left != 0:
-            for i in range(0, len(rows)):
-                new_tile: RenderableItem = (" ", self._color)
-                row: Deque[RenderableItem] = deque(rows[i])
-
-                for j in range(0, self.pad_left + 1):
-                    row.appendleft(new_tile)
-
-        # Append right padding
-        if self.pad_right != 0:
-            for i in range(0, len(rows)):
-                new_tile: RenderableItem = (" ", self._color)
-                row: Deque[RenderableItem] = deque(rows[i])
-
-                for j in range(0, self.pad_right + 1):
-                    row.append(new_tile)
-
-        # Append top and bottom padding
-        if self.pad_top != 0:
-            # Copy a new blank tile into a list as wide as the rest of the rows
-            new_tile: RenderableItem = (" ", self._color)
-            new_row: Deque[RenderableItem] = deque([new_tile for t in range(0, len(rows[0]))])
-            rows.appendleft(new_row)
-
-        if self.pad_bottom != 0:
-            new_tile: RenderableItem = (" ", self._color)
-            new_row: Deque[RenderableItem] = deque([new_tile for t in range(0, len(rows[0]))])
-            rows.append(new_row)
-
-        # Write border, if desired
-        if self._has_border:
-            # Reference vars for special characters from the tileset
-            flat, vertical, top_left, top_right, bottom_left, bottom_right = ("═", "║", "╔", "╗", "╚", "╝")
-
-            # Top border and corners
-            rows[0] = deque([(flat, self._color) for item in rows[0]])
-            rows[0][0] = (top_left, self._color)
-            rows[0][-1] = (top_right, self._color)
-
-            # Bottom border and corners
-            rows[-1] = deque([(flat, self._color) for item in rows[-1]])
-            rows[-1][0] = (bottom_left, self._color)
-            rows[-1][-1] = (bottom_right, self._color)
-
-            # Apply side bits
-            for i in range(1, len(rows)-1):
-                rows[i][0] = (vertical, self._color)
-                rows[i][-1] = (vertical, self._color)
-
-        return [list(row) for row in rows]
-
     def open_menu(self, x: int, y: int, console: Console) -> None:
-        is_open = True
+        def print_rows_at_position(x_0: int, y_0: int, opt_rows: RenderableArray):
+            for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
+                for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
+                    char = opt_rows[dy][dx][0]
+                    color = opt_rows[dy][dx][1]
+                    console.print(x=x_0 + dx,
+                                  y=y_0 + dy,
+                                  string=char,
+                                  fg=color)
 
-        print("menu opened! :)")
+        is_open = True
+        selector = 0
         while is_open:
+            # Draw and accommodate for border, if necessary
+            if self._has_border:
+                # TODO: Add menu title here
+                console.draw_frame(x, y, self._width, self._height)
+                h = self._height - 2  # Effective width and height after drawing the border
+                w = self._width - 2
+            else:
+                h = self._height
+                w = self._width
+
+            # Print menu contents
+            if self.contents:
+                # Left offset should be left pad, plus 1/2 rounded down of half of the diff
+                # between working width and option width. -1 'cause we want corresponding index.
+                # TODO: Make .width/.height getters or find a more graceful way of doing this.
+
+                # Determine the x position of the menu options and the first y position
+                x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
+                y0 = self.pad_top
+                locations = [(x0, y0)]  # Valid top left corner tiles for drawing MenuItems
+
+                dy = self.spacing + self.contents[0]._height  # Determine how many y steps are between each top left
+                yi = y0 + dy  # The first new step will be dy steps down
+
+                while (yi + dy) < h:
+                    locations.append((x0, yi))  # As will each additional one.
+                    yi += dy
+
+                num_opts = len(locations)
+                if num_opts >= len(self.contents):
+                    opts = self.contents
+                else:
+                    opts = self.contents[selector:selector + num_opts]
+
+                for i in range(0, len(opts)):
+                    rows = opts[i].rows
+                    pos = locations[i]
+                    print_rows_at_position(x_0=pos[0], y_0=pos[1], opt_rows=rows)
+
             # Run a movement handler here
             is_open = False
