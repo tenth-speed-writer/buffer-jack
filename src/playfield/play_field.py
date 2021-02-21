@@ -9,7 +9,7 @@ class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
-                 dispatch: EventDispatch,
+                 dispatch: Optional[EventDispatch],
                  contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
         """
         Initialize a new PlayField of given dimensions, optionally with an iterable of initial entities.
