@@ -18,7 +18,7 @@ class TestMenusOption(unittest.TestCase):
 
         # Test setter
         opt.text = "Do\noo\ndy!"  # <= 12 - 1*2 wide, less than 5 - 1*2 high
-        assert opt.text == "Doody!"
+        assert opt.text == "Do\noo\ndy!"
 
         # Test setter parameter checking.
         with self.assertRaises(Exception):
