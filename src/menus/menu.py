@@ -1,9 +1,11 @@
+import tcod
 from tcod.console import Console
 from typing import Iterable, Optional, Callable, List, Tuple, Optional, MutableSequence, Deque
 from copy import deepcopy
 from collections import deque
 from tcod.console import Console
 from math import floor
+from src.inputs import PositionDelta
 
 # Custom type for an RGB color tuple
 RGB = Tuple[int, int, int]
@@ -224,6 +226,12 @@ class MenuOption:
         self._subtext = st
 
 
+class MenuInputHandler(tcod.event.EventDispatch):
+    def __init__(self, menu: Menu):
+        self._menu = menu
+        super().__init__()
+
+
 class Menu:
     """Base class for a menu. Subclass to add specific functionality or context/console/game awareness."""
 
@@ -396,13 +404,38 @@ class Menu:
         else:
             self._has_border = has_border
 
+            # Assign color, if it's valid
+            if sum(0 <= c <= 255 for c in color) < 3:
+                raise ValueError()
+            else:
+                self._color = color
+
         # Coerce contents to a list and assign
         self._contents = [c for c in contents]
 
-        if sum(0 <= c <= 255 for c in color) < 3:
-            raise ValueError()
-        else:
-            self._color = color
+        # The index of the currently selected menu_option.
+        self._selected: int = 0
+
+    @property
+    def selected(self):
+        """Returns the index of the currently selected menu option."""
+        return self._selected
+
+    def change_selection(self, delta: PositionDelta):
+        """Changes the selection based on the dy of a PositionDelta.
+        Also implements looping behavior."""
+        num_options = len(self._contents)
+        y_max = num_options - 1  # Minus 1, because it's an index.
+        dy = deepcopy(delta.dy)
+        y0 = self.selected
+        y1 = y0+dy
+
+        # If y1 is past the end of the list indices, loop back.
+        while y1 > y_max:
+            y1 -= num_options
+
+        self._selected = y1
+
 
     def open_menu(self, x: int, y: int, console: Console) -> None:
         def print_rows_at_position(x_0: int, y_0: int, opt_rows: RenderableArray):
@@ -447,10 +480,10 @@ class Menu:
                     yi += dy
 
                 num_opts = len(locations)
-                if num_opts >= len(self.contents):
-                    opts = self.contents
-                else:
-                    opts = self.contents[selector:selector + num_opts]
+                if num_opts >= len(self.contents):  # If no more contents than places to put them
+                    opts = self.contents  # Just render them all
+                else:  # Otherwise
+                    opts = self.contents[selector:selector + num_opts]  # Render as many as we can
 
                 for i in range(0, len(opts)):
                     rows = opts[i].rows
