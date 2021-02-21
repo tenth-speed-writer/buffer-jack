@@ -6,6 +6,9 @@ from src.entity import Entity
 from src.entity.entities import Mobile, Static
 from typing import Optional, List, Tuple, Dict
 from src.sigil import Sigil
+from src.inputs.gameplay import GameplayHandler
+from tcod.event import EventDispatch
+
 
 class Cell:
     """A collection of entities that exist in the same place on the PlayField."""
@@ -88,7 +91,8 @@ class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
-                 contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
+                 contents: Optional[Iterable[Tuple[int, int, Entity]]] = (),
+                 dispatch: EventDispatch = GameplayHandler):
         """
         Initialize a new PlayField of given dimensions, optionally with an iterable of initial entities.
 
@@ -106,6 +110,8 @@ class PlayField:
         self._field: List[List[Cell]] = []
 
         self._animations: List = []
+
+        self._dispatch = dispatch
 
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
@@ -211,6 +217,18 @@ class PlayField:
         ents = self.entities
         return [ent for ent in ents
                 if isinstance(ent, Static) or issubclass(ent.__class__, Static)]
+
+    @property
+    def dispatch(self) -> EventDispatch:
+        return self._dispatch
+
+    @dispatch.setter
+    def dispatch(self, d: EventDispatch) -> None:
+        if issubclass(d.__class__, EventDispatch):
+            self._dispatch = d
+        else:
+            raise ValueError("d must be a subclass of tcod.event.EventDispatch, got {}"
+                             .format(str(d)))
 
     def tick(self) -> None:
         """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
