@@ -1,5 +1,5 @@
 import tcod
-from typing import Iterable, Callable, List, Tuple, Optional, MutableSequence
+from typing import Iterable, Callable, List, Tuple, Optional, MutableSequence, Type
 from copy import deepcopy
 from tcod.console import Console
 from math import floor
@@ -394,7 +394,8 @@ class Menu:
                  has_border: bool = False,
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
                  contents: Optional[Iterable[MenuOption]] = (),
-                 color: RGB = (255, 255, 255)):
+                 color: RGB = (255, 255, 255),
+                 dispatch: tcod.event.EventDispatch = MenuInputHandler):
         """
         Generate a new menu with specified dimensions.
         :param width: Total width of the menu, in tiles
@@ -445,6 +446,8 @@ class Menu:
         # Assigns a flag to be used by the open_menu logic to eventually break the menu loop
         self._is_open = False
 
+        self._dispatch: tcod.event.EventDispatch = MenuInputHandler(self)
+
     @property
     def selected(self):
         """Returns the index of the currently selected menu option."""
@@ -465,8 +468,17 @@ class Menu:
 
         self._selected = y1
 
-    def close(self):
-        self._is_open = False
+    @property
+    def dispatch(self) -> tcod.event.EventDispatch:
+        return self._dispatch
+
+    @dispatch.setter
+    def dispatch(self, d: Type[tcod.event.EventDispatch]) -> None:
+        if issubclass(d.__class__, tcod.event.EventDispatch):
+            self._dispatch = d()
+        else:
+            raise ValueError("d must be a subclass of tcod.event.EventDispatch, got {}"
+                             .format(str(d)))
 
     def render_menu(self, x0: int, y0: int, console: Console) -> None:
         def print_rows_at_position(x_0: int, y_0: int, opt_rows: RenderableArray):
@@ -509,26 +521,12 @@ class Menu:
             yi += dy
 
         num_opts = len(locations)
-        if num_opts >= len(self.contents):  # If no more contents than places to put them
-            opts = self.contents  # Just render them all
-        else:  # Otherwise
+        if num_opts >= len(self.contents):                   # If no more contents than places to put them
+            opts = self.contents                             # Just render them all
+        else:                                                # Otherwise
             opts = self.contents[self._selected + num_opts]  # Render as many as we can
 
         for i in range(0, len(opts)):
             rows = opts[i].rows
             pos = locations[i]
             print_rows_at_position(x_0=pos[0], y_0=pos[1], opt_rows=rows)
-
-    # def open_menu(self, x: int, y: int, console: Console, context: Context) -> None:
-    #     self._is_open = True
-    #     self._selected = 0
-    #     handler = MenuInputHandler(menu=self)
-    #
-    #     while self._is_open:
-    #         print(self._is_open)
-    #         # Draw and accommodate for border, if necessary
-    #
-    #
-    #         # Parse events since last tick
-    #         for event in tcod.event.get():
-    #             handler.dispatch(event)

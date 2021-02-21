@@ -74,7 +74,6 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
     """Handles all non-menu, non-specialty gameplay key commands.
 
     Be sure to create a new instance when moving to a new PlayField."""
-
     def __init__(self,
                  playfield: PlayField,
                  player_entity: entities.Mobile):
