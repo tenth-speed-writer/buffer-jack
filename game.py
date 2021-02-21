@@ -26,23 +26,41 @@ def main():
                                height=console.height,
                                title="BUFFER.JACK()")
 
-            menu = Menu(width=console.width-2,
-                        height=console.height-2,
-                        spacing=1,
-                        has_border=True,
-                        color=(150, 255, 150))
+            opt1 = MenuOption("Howdy!",
+                              width=12,
+                              height=5,
+                              on_select=lambda x: print("Howdy!"),
+                              subtext="It says howdy",
+                              pad_horizontal=1,
+                              pad_vertical=1,
+                              color=(200, 255, 200))
+
+            opt2 = MenuOption("Doody!",
+                              width=12,
+                              height=5,
+                              on_select=lambda x: print("Doody!"),
+                              subtext="It says doody",
+                              pad_horizontal=1,
+                              pad_vertical=1,
+                              color=(200, 255, 200))
+
+            print("Opt width, height: {},{}".format(str(opt1._width), str(opt1._height)))
+            menu = Menu(30, 30)
+            menu.add_option(opt1)
+            menu.add_option(opt2)
 
             menu.add_option(MenuOption(text="Launch\nGame",
                                        width=console.width-16,
                                        height=5,
                                        on_select=lambda x: print("Player clicked the button!"),
                                        color=(130, 220, 130)))
+            menu.open_menu(5, 5, console)
 
-            menu_renderable = menu.renderable()
-            for y in range(0, len(menu_renderable)):
-                for x in range(0, len(menu_renderable[y])):
-                    char, color = menu_renderable[x][y]
-                    console.print(x+1, y+1, string=char, fg=color)
+            # menu_renderable = menu.renderable()
+            # for y in range(0, len(menu_renderable)):
+            #     for x in range(0, len(menu_renderable[y])):
+            #         char, color = menu_renderable[x][y]
+            #         console.print(x+1, y+1, string=char, fg=color)
 
             context.present(console)
 
