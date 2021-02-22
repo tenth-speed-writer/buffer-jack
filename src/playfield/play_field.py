@@ -9,6 +9,7 @@ class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
+                 window_height: int = 0, window_width: int = 0,
                  dispatch: Optional[EventDispatch] = None,
                  contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
         """
@@ -26,6 +27,10 @@ class PlayField:
         # Iteratively initiate the PlayField with empty Cells,
         # populating the _field variable by the row.
         self._field: List[List[Cell]] = []
+
+        # Assert minimum visual window dimensions are no less than 2x2
+        self._window_height = window_height
+        self._window_width = window_width
 
         self._animations: List = []
 
@@ -147,6 +152,21 @@ class PlayField:
         else:
             raise ValueError("d must be a subclass of tcod.event.EventDispatch, got {}"
                              .format(str(d)))
+
+    @property
+    def window(self):
+        return self._window_width, self._window_height
+
+    @window.setter
+    def window(self, dims: Tuple[int, int]):
+        """Assigns a new visible window for the playfield, given a tuple of (width, height)"""
+        w, h = dims
+        if w >= 0 and h >= 0:
+            self._window_width = w
+            self._window_height = h
+        else:
+            raise ValueError("Both width and height must be greater than zero. Got ({}, {})"
+                             .format(str(w), str(h)))
 
     def tick(self) -> None:
         """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
