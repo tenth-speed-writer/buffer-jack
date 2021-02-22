@@ -2,7 +2,7 @@ import tcod
 from src.menus import Menu, MenuOption
 from src.inputs.gameplay import GameplayHandler
 from src.playfield import PlayField
-from src.entity.entities import Mobile
+from src.entity.entities import Mobile, Static
 from src.sigil import Sigil
 from typing import List, Tuple, Optional, Dict
 from math import floor
@@ -40,9 +40,13 @@ def main():
         # The variable which will hold the active playfield
 
         player_char = Mobile(size=4,
-                             sigil=Sigil("@"),
+                             sigil=Sigil("@", color=(200, 200, 255)),
                              name="Player Character")
-        playfield: Optional[PlayField] = PlayField(200, 200)
+        def make_a_wall():
+            return Static(9, Sigil("#"), "Wall", passable=False)
+        stuff = [(1, x, make_a_wall()) for x in range(0, 200)]
+        stuff += [(4, x, make_a_wall()) for x in range(0, 10)]
+        playfield: Optional[PlayField] = PlayField(200, 200, contents=stuff)
         player_char.introduce_at(10, 10, playfield)
         playfield.dispatch = GameplayHandler(playfield, player_char)
 
@@ -66,7 +70,6 @@ def main():
 
                 # Get its drawables and print them to console
                 pf_rows: List[Dict] = playfield.drawables(center_on=player_char.position)
-                print([(r["x"], r["y"]) for r in pf_rows])
                 for r in pf_rows:  # Each element is a dictionary with the necessary values
                     console.print(x=r["x"] + 1,
                                   y=r["y"] + 1,
