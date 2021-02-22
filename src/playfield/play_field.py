@@ -84,9 +84,17 @@ class PlayField:
     def get_cells(self,
                   cells: Optional[Iterable[Tuple[int, int]]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
+        #print(cells)
         if cells:
             # If specified, return the cells corresponding to the given (x, y) tuples
-            return [self.get_cell(x, y) for x, y in cells]
+            #return [self.get_cell(x, y) for x, y in cells]
+            c = [self.get_cell(x, y) for x, y in cells if x and y]
+            # a = max([x for x, y in [c_ for c_ in cells]])
+            # b = min([x for x, y in cells])
+            # c = max([y for x, y in cells])
+            # d = min([y for x, y in cells])
+            # print("x:{}-{}  y:{}-{}".format(str(b), str(a), str(d), str(c)))
+            return c
         else:
             # Return all cells in this PlayField
             c = []
@@ -134,9 +142,14 @@ class PlayField:
         # Flatten the array of positions and request corresponding Cell instances
         flat_window_positions = sum(window_positions, [])
         cells: List[Cell] = self.get_cells(cells=flat_window_positions)
+        # a = min([c.position[0] for c in cells])
+        # b = max([c.position[0] for c in cells])
+        # c = min([c.position[1] for c in cells])
+        # d = max([c.position[1] for c in cells])
+        # print ("x:{} - {},   y:{} - {}".format(str(a), str(b), str(c), str(d)))
 
-        drawables = [{"x": c.position[0],
-                      "y": c.position[1],
+        drawables = [{"x": c.position[0] - window_x0,
+                      "y": c.position[1] - window_y0,
                       "character": c.sigils[0].character,
                       "priority": c.sigils[0].priority,
                       "rgb": c.sigils[0].color}

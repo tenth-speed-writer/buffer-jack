@@ -5,6 +5,7 @@ from src.playfield import PlayField
 from src.entity.entities import Mobile
 from src.sigil import Sigil
 from typing import List, Tuple, Optional, Dict
+from math import floor
 
 # Default window resolution
 WIDTH, HEIGHT = 720, 480
@@ -41,7 +42,7 @@ def main():
         player_char = Mobile(size=4,
                              sigil=Sigil("@"),
                              name="Player Character")
-        playfield: Optional[PlayField] = PlayField(60, 50)
+        playfield: Optional[PlayField] = PlayField(200, 200)
         player_char.introduce_at(10, 10, playfield)
         playfield.dispatch = GameplayHandler(playfield, player_char)
 
@@ -54,23 +55,21 @@ def main():
                                title="BUFFER.JACK()")
 
             # Render the playfield, if one is open
-            x0, y0 = 1, 1  # We drew a border, remember. :)
             if playfield:
                 # First, tick the contents of the playfield
                 playfield.tick()
-                playfield.origin = (x0, y0)
+
+                # Give it its renderable space--right now everything except the game screen border
+                playfield.origin = (1, 1)
                 playfield.window = (console.width - 2,
                                     console.height - 2)
 
-                # Set its viewable window, in case the console size has changed
-                # (eg. through the user resizing the window)
-                playfield.window = (console.width - 2, console.height - 2)
-
                 # Get its drawables and print them to console
-                pf_rows: List[Dict] = playfield.drawables()
+                pf_rows: List[Dict] = playfield.drawables(center_on=player_char.position)
+                print([(r["x"], r["y"]) for r in pf_rows])
                 for r in pf_rows:  # Each element is a dictionary with the necessary values
-                    console.print(x=r["x"] + x0,
-                                  y=r["y"] + y0,
+                    console.print(x=r["x"] + 1,
+                                  y=r["y"] + 1,
                                   string=r["character"],
                                   fg=r["rgb"])
 
