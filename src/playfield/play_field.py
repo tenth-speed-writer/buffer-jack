@@ -114,6 +114,14 @@ class PlayField:
                       "rgb": c.sigils[0].color}
                      for c in cells
                      if c.contents and len(c.contents) != 0]
+        x0, y0 = self.origin
+        x_max, y_max = self.window
+
+        # If we have more returnables than space to draw them,
+        # then only draw what fits in the PlayField's .window.
+        returnables = [d for d in drawables
+                       if d["x"] + x0 <= x_max
+                       and d["y"] + y0 <= y_max]
         return drawables
 
     @property

@@ -41,7 +41,7 @@ def main():
         player_char = Mobile(size=4,
                              sigil=Sigil("@"),
                              name="Player Character")
-        playfield: Optional[PlayField] = PlayField(40, 40)
+        playfield: Optional[PlayField] = PlayField(60, 50)
         player_char.introduce_at(10, 10, playfield)
         playfield.dispatch = GameplayHandler(playfield, player_char)
 
@@ -54,12 +54,20 @@ def main():
                                title="BUFFER.JACK()")
 
             # Render the playfield, if one is open
+            x0, y0 = 1, 1  # We drew a border, remember. :)
             if playfield:
+                # First, tick the contents of the playfield
                 playfield.tick()
+
+                # Set its viewable window, in case the console size has changed
+                # (eg. through the user resizing the window)
+                playfield.window = (console.width - 2, console.height - 2)
+
+                # Get its drawables and print them to console
                 pf_rows: List[Dict] = playfield.drawables()
-                for r in pf_rows:
-                    console.print(x=r["x"],
-                                  y=r["y"],
+                for r in pf_rows:  # Each element is a dictionary with the necessary values
+                    console.print(x=r["x"] + x0,
+                                  y=r["y"] + y0,
                                   string=r["character"],
                                   fg=r["rgb"])
 
@@ -77,10 +85,11 @@ def main():
                 # If no menu is open, but the playfield is, then use its event handler
                 dispatcher: tcod.event.EventDispatch = playfield.dispatch
 
-            context.present(console)
+            context.present(console)  # This is where we actually display what we've rendered.
+
             for event in tcod.event.get():
                 context.convert_event(event)  # Converting the event fills in mouse event tile coordinates
-                dispatcher.dispatch(event)
+                dispatcher.dispatch(event)    # Pass it along to the appropriate dispatcher
 
 
 
