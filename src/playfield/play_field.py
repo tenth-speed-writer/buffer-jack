@@ -107,21 +107,26 @@ class PlayField:
         cells: List[Cell] = self.get_cells()
 
         # TODO: Implement animations here as an alternative to just showing the first top sigil
-        drawables = [{"x": c.position[0],
-                      "y": c.position[1],
+        x0, y0 = self.origin
+        x_max, y_max = self.window
+
+        # We'll be star drawing at x0, y0, so the maximums are relative to those tiles.
+        x_max += x0
+        y_max += y0
+
+        drawables = [{"x": c.position[0] + x0,
+                      "y": c.position[1] + y0,
                       "character": c.sigils[0].character,
                       "priority": c.sigils[0].priority,
                       "rgb": c.sigils[0].color}
                      for c in cells
                      if c.contents and len(c.contents) != 0]
-        x0, y0 = self.origin
-        x_max, y_max = self.window
 
         # If we have more returnables than space to draw them,
         # then only draw what fits in the PlayField's .window.
         returnables = [d for d in drawables
-                       if d["x"] + x0 <= x_max
-                       and d["y"] + y0 <= y_max]
+                       if d["x"] <= x_max
+                       and d["y"] <= y_max]
         return drawables
 
     @property
