@@ -10,6 +10,7 @@ class PlayField:
     Stored in [y][x] order of ordinal position."""
     def __init__(self, width: int, height: int,
                  window_height: int = 0, window_width: int = 0,
+                 window_x0: int = 0, window_y0: int = 0,
                  dispatch: Optional[EventDispatch] = None,
                  contents: Optional[Iterable[Tuple[int, int, Entity]]] = ()):
         """
@@ -31,6 +32,8 @@ class PlayField:
         # Assert minimum visual window dimensions are no less than 2x2
         self._window_height = window_height
         self._window_width = window_width
+        self._window_x0 = window_x0
+        self._window_y0 = window_y0
 
         self._animations: List = []
 
@@ -167,6 +170,22 @@ class PlayField:
         else:
             raise ValueError("Both width and height must be greater than zero. Got ({}, {})"
                              .format(str(w), str(h)))
+
+    @property
+    def origin(self):
+        """Returns the top left cell (x0, y0) from which to draw this playfield."""
+        return self._window_x0, self._window_y0
+
+    @origin.setter
+    def origin(self, new_origin: Tuple[int, int]):
+        """Assigns a new tuple(x, y) as the topleft console cell from which to render this playfield."""
+        x0, y0 = new_origin
+        if x0 >=0 and y0 >= 0:
+            self._window_x0 = x0
+            self._window_y0 = y0
+        else:
+            raise ValueError("Both x0 and y0 must be >= 0. Given ({}, {})"
+                             .format(str(x0), str(y0)))
 
     def tick(self) -> None:
         """Calls .tick on all child cells' entities, then updates own animations/delays/etc"""
