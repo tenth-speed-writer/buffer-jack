@@ -2,6 +2,7 @@ from typing import Optional, Iterable, Tuple, List, Dict
 from src.entity import Entity
 from src.entity.entities import Static, Mobile
 from tcod.event import EventDispatch
+from math import floor
 from .cell import Cell
 
 
@@ -102,32 +103,47 @@ class PlayField:
 
         return True in [row_has_cell(row) for row in self._field]
 
-    def drawables(self) -> List[Dict]:
+    def drawables(self, center_on: Tuple[int, int]) -> List[Dict]:
         """Render own cells into an iterable which can be printed to a console line by line."""
-        cells: List[Cell] = self.get_cells()
 
         # TODO: Implement animations here as an alternative to just showing the first top sigil
-        x0, y0 = self.origin
-        x_max, y_max = self.window
+        console_x0, console_y0 = self.origin  # The top-left console tile in which the window is drawn
+        console_x_max, console_y_max = self.window  # The maximum height and width we can render at once
 
-        # We'll be star drawing at x0, y0, so the maximums are relative to those tiles.
-        x_max += x0
-        y_max += y0
+        # We'll start drawing at x0, y0, so the maximums are relative to those tiles.
+        console_x_max += console_x0
+        console_y_max += console_y0
 
-        drawables = [{"x": c.position[0] + x0,
-                      "y": c.position[1] + y0,
+        center_x, center_y = center_on
+
+        # Where--in regards to the playfield--to sample the drawables.
+        # Greater of zero or half a screen to the left
+        window_x0 = max(floor(center_x - 0.5*self.window[0]), 0)
+        window_y0 = max(floor(center_y - 0.5*self.window[1]), 0)
+
+        # Filter positions based on whether a corresponding list index would actually exist.
+        # If the player is standing at the bottom right extreme of a big map, we just print 1/4th of a screen.
+        window_positions = [[(x, y)
+                             for x in range(window_x0,
+                                            window_x0 + self.window[0])
+                             if x < self.width]
+                            for y in range(window_y0,
+                                           window_y0 + self.window[1])
+                            if y < self.height]
+
+        # Flatten the array of positions and request corresponding Cell instances
+        flat_window_positions = sum(window_positions, [])
+        cells: List[Cell] = self.get_cells(cells=flat_window_positions)
+
+        drawables = [{"x": c.position[0],
+                      "y": c.position[1],
                       "character": c.sigils[0].character,
                       "priority": c.sigils[0].priority,
                       "rgb": c.sigils[0].color}
                      for c in cells
                      if c.contents and len(c.contents) != 0]
 
-        # If we have more returnables than space to draw them,
-        # then only draw what fits in the PlayField's .window.
-        returnables = [d for d in drawables
-                       if d["x"] <= x_max
-                       and d["y"] <= y_max]
-        return returnables
+        return drawables
 
     @property
     def entities(self) -> List[Entity]:
