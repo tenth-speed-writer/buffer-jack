@@ -21,8 +21,6 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* PlayField renderer handling for variable height, width
-* PlayField overflow of drawable space when screen space is limited
 * Create a global tick
 * Create an animation tick cycle (maybe a TickHandler class?)
 
