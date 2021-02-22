@@ -127,7 +127,7 @@ class PlayField:
         returnables = [d for d in drawables
                        if d["x"] <= x_max
                        and d["y"] <= y_max]
-        return drawables
+        return returnables
 
     @property
     def entities(self) -> List[Entity]:
