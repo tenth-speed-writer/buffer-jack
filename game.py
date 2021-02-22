@@ -58,6 +58,9 @@ def main():
             if playfield:
                 # First, tick the contents of the playfield
                 playfield.tick()
+                playfield.origin = (x0, y0)
+                playfield.window = (console.width - 2,
+                                    console.height - 2)
 
                 # Set its viewable window, in case the console size has changed
                 # (eg. through the user resizing the window)
