@@ -388,8 +388,17 @@ class Menu:
         if opt in self._contents:
             self._contents.remove(opt)
 
+    def open_menu(self) -> None:
+        """Set this menu as the last element of the interface menus list"""
+        self._menus.append(self)
+
+    def close_menu(self) -> None:
+        self._menus.remove(self)
+        del self
+
     def __init__(self,
                  width: int, height: int,
+                 menus: List,
                  spacing: int = 2,
                  has_border: bool = False,
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
@@ -400,6 +409,7 @@ class Menu:
         Generate a new menu with specified dimensions.
         :param width: Total width of the menu, in tiles
         :param height: Total height of the menu, in tiles
+        :param menus: The ordered list of active menus from/to which to add/remove this menu
         :param spacing: How many empty rows to draw between each menu item
         :param padding: A tuple of (top, right, bottom, left), in tiles with which to pad the menu
         :param contents: An iterable of MenuOption instances, in order, to be added to this menu. Can be empty.
@@ -447,6 +457,8 @@ class Menu:
         self._is_open = False
 
         self._dispatch: tcod.event.EventDispatch = MenuInputHandler(self)
+
+        self._menus = menus
 
     @property
     def selected(self):

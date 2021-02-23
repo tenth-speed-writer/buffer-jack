@@ -21,7 +21,9 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* Create a global tick
-* Create an animation tick cycle (maybe a TickHandler class?)
+* Implement animations on global tick
+* Menus need to render a cursor on their selected elements
+* Create an Interface class to juggle the playfield and menus and maybe also things rendered at the same level as the playfield
+
 
 ---
