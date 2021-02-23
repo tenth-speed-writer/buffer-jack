@@ -4,6 +4,7 @@ from src.inputs.gameplay import GameplayHandler
 from src.playfield import PlayField
 from src.entity.entities import Mobile, Static
 from src.sigil import Sigil
+from src.playfield.room_gen.room import RectangularRoom
 from typing import List, Tuple, Optional, Dict
 from math import floor
 
@@ -42,13 +43,15 @@ def main():
         player_char = Mobile(size=4,
                              sigil=Sigil("@", color=(200, 200, 255)),
                              name="Player Character")
-        def make_a_wall():
-            return Static(9, Sigil("#"), "Wall", passable=False)
-        stuff = [(1, x, make_a_wall()) for x in range(0, 200)]
-        stuff += [(4, x, make_a_wall()) for x in range(0, 10)]
-        playfield: Optional[PlayField] = PlayField(200, 200, contents=stuff)
+
+        playfield: Optional[PlayField] = PlayField(200, 200)
+
         player_char.introduce_at(10, 10, playfield)
         playfield.dispatch = GameplayHandler(playfield, player_char)
+
+        room = RectangularRoom(30, 20)
+        room.add_door(0, 6)
+        room.add_to_playfield(5, 5, playfield)
 
         while True:
             # Create the console and draw
@@ -60,8 +63,9 @@ def main():
 
             # Render the playfield, if one is open
             if playfield:
-                # First, tick the contents of the playfield
-                playfield.tick()
+                # First, tick the contents of the playfield--if we're not waiting on player input.
+                if player_char.cooldown:  # If it's not zero, else we're gonna hold off.
+                    playfield.tick()
 
                 # Give it its renderable space--right now everything except the game screen border
                 playfield.origin = (1, 1)

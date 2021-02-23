@@ -1,6 +1,7 @@
 import json
 from src.sigil import Sigil
 from src.entity.entities import Static, Entity
+from src.entity.landscape import WalkableTerrain, Wall, Door
 from src.playfield import PlayField
 from typing import List, Optional, Callable, Tuple
 from random import randint
@@ -9,10 +10,7 @@ EntityArray = List[List[Optional[List[Entity]]]]
 
 
 def make_wall() -> Static:
-    return Static(size=9,
-                  sigil=Sigil("█", priority=3),
-                  name="Wall",
-                  passable=False)
+    return Wall()
 
 
 def make_floor() -> Static:
@@ -21,12 +19,7 @@ def make_floor() -> Static:
     else:
         char = ","
 
-    return Static(size=1,
-                  sigil=Sigil(char,
-                              priority=1,
-                              color=(100, 100, 100)),
-                  name="Floor",
-                  passable=True)
+    return WalkableTerrain(character=char)
 
 
 class Room:
@@ -94,10 +87,18 @@ class RectangularRoom(Room):
         self.draw_rect_room()
 
     def add_door(self, x, y):
-        is_in_range = x >= self.width or y >= self.height
-        is_on_edge = x == 0 or y == 0 or x == self.width - 1 or y == self.height - 1
+        is_in_range = x <= self.width or y <= self.height
+        is_on_edge = (x == 0) or (y == 0) or (x == self.width - 1) or (y == self.height - 1)
+
         if not (is_in_range and is_on_edge):
             raise ValueError("Can only add a door on a room edge; got {}, {}"
                              .format(str(x), str(y)))
+
         else:
-            pass
+            # Remove any walls from that point and add a door
+            for ent in self._contents[y][x]:
+                if issubclass(ent.__class__, Wall):
+                    print("Removed {}".format(str(ent)))
+                    self._contents[y][x].remove(ent)
+            print(self._contents[y][x])
+            self._contents[y][x] = [] + self._contents[y][x] + [Door()]

@@ -37,12 +37,12 @@ class Wall(Static):
 
 class Door(Wall):
     def __init__(self,
-                 open_char: str = "",
-                 closed_char: str = "",
+                 open_char: str = ".",
+                 closed_char: str = "+",
                  color: Tuple[int, int, int] = (240, 240, 240),
                  start_open: bool = False):
-        self._open_sigil = Sigil(open_char, 2, color)
-        self._closed_sigil = Sigil(closed_char, 2, color)
+        self._open_sigil = Sigil(open_char, 3, color)
+        self._closed_sigil = Sigil(closed_char, 3, color)
         self._is_open = False
 
         # Call the super's constructor
