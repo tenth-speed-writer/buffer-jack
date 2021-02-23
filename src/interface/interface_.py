@@ -2,6 +2,7 @@ import tcod
 from typing import List, Optional
 from src.playfield import PlayField
 from src.menus import Menu
+from math import floor
 
 
 class Interface:
@@ -39,14 +40,61 @@ class Interface:
     def console(self, c: tcod.console.Console):
         self._console = c
 
+    def _print_playfield(self):
+        # TODO: Replace this with a mutable camera_center attribute in order to make this player-character-independent
+        # Set the camera center equal to the greater of the player's position or half-a-window from the PlayField edge.
+        center_x = max(floor(self.playfield.window[0] / 2),
+                       self.playfield.player_character.position[0])
+        center_y = max(floor(self.playfield.window[1] / 2),
+                       self.playfield.player_character.position[1])
+
+        drawables = self.playfield.drawables(center_on=(center_x,
+                                                        center_y))
+        for d in drawables:
+            self.console.print(x=d["x"],
+                               y=d["y"],
+                               string=d["character"],
+                               fg=d["rgb"])
+
+    def _print_menu(self, menu: Menu):
+        x0, y0 = 10, 10
+        menu.render_menu(x0, y0, self.console)
+
+    def print_self(self):
+        # TODO: Render other interface elements like stats and UI console
+        self.console.draw_frame(x=0, y=0,
+                                width=self.console.width,
+                                height=self.console.height,
+                                title="BUFFER.JACK()")
+        self.playfield.origin = 1, 1
+        self.playfield.window = (self.console.width - 24 - 1,
+                                 self.console.height - 12 - 1)
+        if self._menus:
+            for m in self._menus:
+                m.render_menu(10, 10, self.console)
+
     def tick(self) -> None:
         """Fetches a fresh console and ticks the playfield.
         Override to apply on-tick interface screw."""
-        self.playfield.tick()
+
+        # Simulate only if the player isn't in a menu and it's not their turn to act
+        pc = self.playfield.player_character
+        if pc.cooldown != 0 or self._menus:
+            self.playfield.tick()
 
         # Refresh console and draw contents
         self.console = self.new_console()
+        self.print_self()
 
+        # Determine whether to use a menu dispatcher or the playfield dispatcher
+        if self._menus:
+            dispatcher = self._menus[-1].dispatch  # From the top-most menu
+        else:
+            dispatcher = self.playfield.dispatch
+
+        # And hand off events! :)
+        for event in tcod.event.get():
+            dispatcher.dispatch(event)
 
     def __init__(self,
                  context: tcod.context.Context,
