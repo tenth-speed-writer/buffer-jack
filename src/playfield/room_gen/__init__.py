@@ -1,4 +1,3 @@
-__all__ = ["RoomGen", "Room"]
+__all__ = ["Room"]
 
-from .roomgen import RoomGen
 from .room import Room
