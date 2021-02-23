@@ -30,32 +30,6 @@ def make_floor() -> Static:
 
 
 class Room:
-    def __init__(self, width: int, height: int,
-                 wall_func: Callable = make_wall,
-                 floor_func: Callable = make_floor):
-
-        self._contents: EntityArray = [[[] for x in range(0, width)]
-                                       for y in range(0, height)]
-
-        # Top and bottom walls
-        self._contents[0] = [[wall_func()] for x in range(0, width)]
-        self._contents[-1] = [[wall_func()] for x in range(0, width)]
-
-        # Left and right walls
-        x_limits = (0, width - 1)
-        for y in range(1, height-1):
-            for x in range(0, width):
-                if x in x_limits:
-                    self._contents[y][x].append(wall_func())
-
-        # Floors, including under walls
-        for y in range(0, height):
-            for x in range(0, width):
-                self._contents[y][x].append(floor_func())
-
-        self._width = width
-        self._height = height
-
     def add_to_playfield(self, x0: int, y0: int,
                          pf: PlayField):
         """Given a playfield and an upper left corner, will attempt to draw itself on that playfield."""
@@ -69,3 +43,61 @@ class Room:
                         e.introduce_at(x0+x, y0+y, pf)
                     else:
                         print("Warning: Tried to draw entity outside PlayField bounds.")
+
+    def __init__(self, width: int, height: int,
+                 wall_func: Callable = make_wall,
+                 floor_func: Callable = make_floor):
+        self._contents: EntityArray = [[[] for x in range(0, width)]
+                                       for y in range(0, height)]
+
+        self._wall_func = wall_func
+        self._floor_func = floor_func
+
+        self._width = width
+        self._height = height
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
+
+
+class RectangularRoom(Room):
+    """The bog standard room generator. Creates a 1-tile wall from a specifiable
+    function wall_func, then fills the whole shebang with floors from a likewise
+    specifiable floor_func."""
+    def draw_rect_room(self):
+        """Draws a rectangular room"""
+        # Top and bottom walls
+        self._contents[0] = [[self._wall_func()] for x in range(0, self._width)]
+        self._contents[-1] = [[self._wall_func()] for x in range(0, self._width)]
+
+        # Left and right walls
+        x_limits = (0, self._width - 1)
+        for y in range(1, self._height - 1):
+            for x in range(0, self._width):
+                if x in x_limits:
+                    self._contents[y][x].append(self._wall_func())
+
+        # Floors, including under walls
+        for y in range(0, self._height):
+            for x in range(0, self._width):
+                self._contents[y][x].append(self._floor_func())
+
+    def __init__(self, width: int, height: int,
+                 wall_func: Callable = make_wall,
+                 floor_func: Callable = make_floor):
+        super().__init__(width, height, wall_func, floor_func)
+        self.draw_rect_room()
+
+    def add_door(self, x, y):
+        is_in_range = x >= self.width or y >= self.height
+        is_on_edge = x == 0 or y == 0 or x == self.width - 1 or y == self.height - 1
+        if not (is_in_range and is_on_edge):
+            raise ValueError("Can only add a door on a room edge; got {}, {}"
+                             .format(str(x), str(y)))
+        else:
+            pass
