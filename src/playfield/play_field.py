@@ -9,7 +9,11 @@ from .cell import Cell
 class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
+
     def __init__(self, width: int, height: int,
+                 player_character: Optional[Mobile] = None,
+                 # Should only be special in that we pause sim when the PC's cooldown==0
+                 pc_spawn_point: Optional[Tuple[int, int]] = None,  # Where to drop the player character
                  window_height: int = 0, window_width: int = 0,
                  window_x0: int = 0, window_y0: int = 0,
                  dispatch: Optional[EventDispatch] = None,
@@ -39,6 +43,14 @@ class PlayField:
         self._animations: List = []
 
         self._dispatch = dispatch
+
+        self._player_character = player_character
+        if (player_character and not pc_spawn_point) or (pc_spawn_point and not player_character):
+            raise ValueError("If either player_character or pc_spawn_point is given, then both must be provided.")
+        else:
+            self.player_character.introduce_at(x=pc_spawn_point[0],
+                                               y=pc_spawn_point[1],
+                                               playfield=self)
 
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
@@ -84,16 +96,10 @@ class PlayField:
     def get_cells(self,
                   cells: Optional[Iterable[Tuple[int, int]]] = None) -> List[Cell]:
         """Gets a list of all cells in a list of (x, y) tuples if given, or all cells otherwise."""
-        #print(cells)
+        # print(cells)
         if cells:
             # If specified, return the cells corresponding to the given (x, y) tuples
-            #return [self.get_cell(x, y) for x, y in cells]
             c = [self.get_cell(x, y) for x, y in cells if x and y]
-            # a = max([x for x, y in [c_ for c_ in cells]])
-            # b = min([x for x, y in cells])
-            # c = max([y for x, y in cells])
-            # d = min([y for x, y in cells])
-            # print("x:{}-{}  y:{}-{}".format(str(b), str(a), str(d), str(c)))
             return c
         else:
             # Return all cells in this PlayField
@@ -106,6 +112,7 @@ class PlayField:
     def has_cell(self, cell: Cell) -> bool:
         """Skims the _field arrays for any instance of the specified Cell.
         :param cell An instance of playfield.Cell"""
+
         def row_has_cell(r) -> bool:
             return cell in r
 
@@ -126,8 +133,8 @@ class PlayField:
 
         # Where--in regards to the playfield--to sample the drawables.
         # Greater of zero or half a screen to the left
-        window_x0 = max(floor(center_x - 0.5*self.window[0]), 0)
-        window_y0 = max(floor(center_y - 0.5*self.window[1]), 0)
+        window_x0 = max(floor(center_x - 0.5 * self.window[0]), 0)
+        window_y0 = max(floor(center_y - 0.5 * self.window[1]), 0)
 
         # Filter positions based on whether a corresponding list index would actually exist.
         # If the player is standing at the bottom right extreme of a big map, we just print 1/4th of a screen.
@@ -222,7 +229,7 @@ class PlayField:
     def origin(self, new_origin: Tuple[int, int]):
         """Assigns a new tuple(x, y) as the topleft console cell from which to render this playfield."""
         x0, y0 = new_origin
-        if x0 >=0 and y0 >= 0:
+        if x0 >= 0 and y0 >= 0:
             self._window_x0 = x0
             self._window_y0 = y0
         else:
@@ -234,3 +241,14 @@ class PlayField:
         mobs = self.mobiles
         for m in mobs:
             m.tick()
+
+    @property
+    def player_character(self) -> Mobile:
+        return self._player_character
+
+    @player_character.setter
+    def player_character(self, pc: Mobile) -> None:
+        if pc not in self.mobiles:
+            raise ValueError("pc must be a Mobile and already have been introduced to the playfield.")
+        else:
+            self.player_character = pc
