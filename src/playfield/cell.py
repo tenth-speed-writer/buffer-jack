@@ -59,14 +59,14 @@ class Cell:
     def remove_entity(self, entity: Entity) -> None:
         """Removes an entity from .contents if it exists, or prints a warning if not."""
         if entity in self.contents:
-            print("Beginning entity removal, current entities:")
-            print(self._contents)
+            # print("Beginning entity removal, current entities:")
+            # print(self._contents)
             self._contents.remove(entity)
-            print("removed entity named {} from cell {}, {}"
-                  .format(str(entity.name),
-                          str(entity.position[0]),
-                          str(entity.position[1])))
-            print(self._contents)
+            # print("removed entity named {} from cell {}, {}"
+            #       .format(str(entity.name),
+            #               str(entity.position[0]),
+            #               str(entity.position[1])))
+            # print(self._contents)
         else:
             print("Can't remove entity {} from cell x:{}, y:{} as it isn't there!"
                   .format(entity.name,
