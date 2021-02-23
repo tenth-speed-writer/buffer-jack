@@ -76,7 +76,8 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
     Be sure to create a new instance when moving to a new PlayField."""
     def __init__(self,
                  playfield: PlayField,
-                 player_entity: entities.Mobile):
+                 player_entity: entities.Mobile,
+                 console: tcod.console.Console):
         """Initializes with references to the active playfield and player entity.
         Thus, be sure to create a new GameplayHandler when moving to a new PlayField,
         and to do so after the player's entity has been introduced to it.."""
@@ -87,6 +88,7 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
 
         self._playfield = playfield
         self._player_entity = player_entity
+        self._console = console
 
     # Internal methods are prefixed cmd_.
     # The on-event methods we're overwriting are prefaced ev_.
