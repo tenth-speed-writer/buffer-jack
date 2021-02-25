@@ -493,17 +493,29 @@ class Menu:
                              .format(str(d)))
 
     def render_menu(self, x0: int, y0: int) -> List[Tuple[int, int, Sigil]]:
+        """
+
+        :param x0 - The x component of the top-left corner of this menu
+        :param y0 - The y component of the top-left corner of this menu
+        """
         def rows_to_drawables(x_0: int, y_0: int, opt_rows: RenderableArray) -> List[Tuple[int, int, Sigil]]:
-            drawables = []
+            """
+
+            :param x_0: The x component of the top-left corner of this set of things to be drawn
+            :param y_0: The y component of the top-left corner of this set of things to be drawn
+            :param opt_rows: A batch of rows (usually given by a MenuObject) to be drawn
+            :return: A list of (x, y, Sigil) tuples, where x and y are true console positions.
+            """
+            drawables_ = []
             for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
                 for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
                     char = opt_rows[dy][dx][0]
                     color = opt_rows[dy][dx][1]
-                    drawables.append((x_0 + dx,
+                    drawables_.append((x_0 + dx,
                                       y_0 + dy,
                                       Sigil(char,
                                             color=color)))
-            return drawables
+            return drawables_
 
         # Disregard drawing menu borders here.
         # If we want one, we can make the console draw it elsewhere.
@@ -526,13 +538,12 @@ class Menu:
         # TODO: Make .width/.height getters or find a more graceful way of doing this.
 
         # Determine the x position of the menu options and the first y position
-        x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
-        y0 = self.pad_top
-        locations = [(x0, y0)]  # Valid top left corner tiles for drawing MenuItems
+        opt_x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
+        opt_y0 = self.pad_top
+        locations = [(opt_x0, opt_y0)]  # Valid top left corner tiles for drawing MenuItems
 
         dy = self.spacing + self.contents[0]._height  # Determine how many y steps are between each top left
-        yi = y0 + dy  # The first new step will be dy steps down
-
+        yi = opt_y0 + dy  # The first new step will be dy steps down
         while (yi + dy) < h:
             locations.append((x0, yi))  # As will each additional one.
             yi += dy
