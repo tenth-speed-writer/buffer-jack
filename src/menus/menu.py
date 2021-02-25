@@ -1,9 +1,9 @@
 import tcod
 from typing import Iterable, Callable, List, Tuple, Optional, MutableSequence, Type
 from copy import deepcopy
-from tcod.console import Console
 from math import floor
 from src.inputs import PositionDelta
+from src.sigil import Sigil
 
 # Custom type for an RGB color tuple
 RGB = Tuple[int, int, int]
@@ -492,24 +492,29 @@ class Menu:
             raise ValueError("d must be a subclass of tcod.event.EventDispatch, got {}"
                              .format(str(d)))
 
-    def render_menu(self, x0: int, y0: int, console: Console) -> None:
-        def print_rows_at_position(x_0: int, y_0: int, opt_rows: RenderableArray):
+    def render_menu(self, x0: int, y0: int) -> List[Tuple[int, int, Sigil]]:
+        def rows_to_drawables(x_0: int, y_0: int, opt_rows: RenderableArray) -> List[Tuple[int, int, Sigil]]:
+            drawables = []
             for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
                 for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
                     char = opt_rows[dy][dx][0]
                     color = opt_rows[dy][dx][1]
-                    console.print(x=x_0 + dx,
-                                  y=y_0 + dy,
-                                  string=char,
-                                  fg=color)
-        if self._has_border:
-            # TODO: Add menu title here
-            console.draw_frame(x0, y0, self._width, self._height)
-            h = self._height - 2  # Effective width and height after drawing the border
-            w = self._width - 2
-        else:
-            h = self._height
-            w = self._width
+                    drawables.append((x_0 + dx,
+                                      y_0 + dy,
+                                      Sigil(char,
+                                            color=color)))
+            return drawables
+
+        # Disregard drawing menu borders here.
+        # If we want one, we can make the console draw it elsewhere.
+        #
+        # if self._has_border:
+        #     console.draw_frame(x0, y0, self._width, self._height)
+        #     h = self._height - 2  # Effective width and height after drawing the border
+        #     w = self._width - 2
+        # else:
+        h = self._height
+        w = self._width
 
         # Print menu contents
         # TODO: Replace this with robust handling for opening empty menus
@@ -538,7 +543,10 @@ class Menu:
         else:                                                # Otherwise
             opts = self.contents[self._selected + num_opts]  # Render as many as we can
 
+        drawables: List[Tuple[int, int, Sigil]] = []
         for i in range(0, len(opts)):
             rows = opts[i].rows
             pos = locations[i]
-            print_rows_at_position(x_0=pos[0], y_0=pos[1], opt_rows=rows)
+            drawables += rows_to_drawables(x_0=x0 + pos[0], y_0=y0 + pos[1], opt_rows=rows)
+
+        return drawables
