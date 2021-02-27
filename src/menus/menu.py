@@ -404,7 +404,8 @@ class Menu:
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
                  contents: Optional[Iterable[MenuOption]] = (),
                  color: RGB = (255, 255, 255),
-                 dispatch: tcod.event.EventDispatch = MenuInputHandler):
+                 dispatch: tcod.event.EventDispatch = MenuInputHandler,
+                 is_full_screen: bool = False):
         """
         Generate a new menu with specified dimensions.
         :param width: Total width of the menu, in tiles
@@ -456,7 +457,12 @@ class Menu:
         # Assigns a flag to be used by the open_menu logic to eventually break the menu loop
         self._is_open = False
 
-        self._dispatch: tcod.event.EventDispatch = MenuInputHandler(self)
+        if dispatch:
+            self._dispatch = dispatch
+        else:
+            self._dispatch: tcod.event.EventDispatch = MenuInputHandler(self)
+
+        self._is_full_screen = is_full_screen
 
         self._menus = menus
 
@@ -561,3 +567,11 @@ class Menu:
             drawables += rows_to_drawables(x_0=x0 + pos[0], y_0=y0 + pos[1], opt_rows=rows)
 
         return drawables
+
+    @property
+    def is_full_screen(self) -> bool:
+        return self._is_full_screen
+
+    @is_full_screen.setter
+    def is_full_screen(self, truth: bool) -> None:
+        self._is_full_screen = truth
