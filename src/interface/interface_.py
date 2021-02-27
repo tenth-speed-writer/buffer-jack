@@ -137,9 +137,7 @@ class Interface:
 
     def __init__(self,
                  context: tcod.context.Context,
-                 playfield: PlayField,
-                 pf_width: Optional[int] = None,
-                 pf_height: Optional[int] = None):
+                 playfield: PlayField):
         self._context = context
         self._pf = playfield
         self._menus: List[Menu] = []
