@@ -4,6 +4,7 @@ from src.playfield import PlayField
 from src.menus import Menu
 from src.entity import Entity
 from src.entity.entities import Mobile
+from .game_log import LogEntry, GameLog
 from math import floor
 
 

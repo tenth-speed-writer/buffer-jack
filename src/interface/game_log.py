@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Tuple, Optional
 
 RGBTuple = Tuple[int, int, int]
@@ -62,6 +63,20 @@ class LogEntry:
 
         return [r for r in row_gen()]
 
+    def as_drawables(self, x0: int, y0: int, width: int) -> List[Tuple[int, int, str, Tuple[int, int, int]]]:
+        """Given a top-left corner (x0, y0), return a list of [(x, y, character, (r, g, b))]"""
+        rows = self.as_rows(width)
+        drawables: List[Tuple[int, int, str, Tuple[int, int, int]]] = []
+        for y in range(0, len(rows)):
+            row = rows[y]
+            for x in range(0, len(row)):
+                char = row[x]
+                drawables.append((x + x0,
+                                  y + y0,
+                                  char,
+                                  self.color))
+        return drawables
+
 
 class GameLog:
     """Keeps a running log of text to be printed for the player during gameplay,
@@ -82,5 +97,41 @@ class GameLog:
         """Removes a specified entry from this log, if it exists in it. Fails quietly if it does not."""
         if entry in self._log:
             self._log.remove(entry)
-        else:
-            pass
+
+    def as_drawables(self, x0: int, y0: int) -> List[Tuple[int, int, str, Tuple[int, int, int]]]:
+        """Returns a list of tuples containing [x, y, character, (r, g, b)] from which to draw the
+        contents of this interface element. Assumes that the range ends at x0+width, y0+height.
+
+        :param x0 The x value of the top-left most point from which to render the menu.
+        :param y0 The y value of the top-left most point from which to render the menu."""
+
+        # Iterate through our available height in increments of each shown entry's height plus one margin row.
+        yi = deepcopy(y0)  # The y offset
+        i = -1             # The index--relative to the end of ._log-- that we wish to reference next.
+        drawables = []     # A list to hold the drawable tuples we wish to return
+
+        # While yi is between our origin point and origin + height,
+        # and while we ALSO have more LogEntries left to render...
+        while yi <= y0 + self._height and -i < len(self._log):
+            # Render it on column dx and row yi, then append it to drawables.
+            entry = self._log[i]
+            drawables += entry.as_drawables(x0=x0,
+                                            y0=yi,
+                                            width=self._width)
+
+            # Set the next top-left corner, adding an extra row between statements as a margin.
+            yi += len(entry.as_rows(self._width)) + 1
+
+            # Set the index back by one more element from the last
+            i -= 1
+
+        return drawables
+
+
+foo = GameLog(width=40, height=50,
+              initial_log=[LogEntry("This is the first log item.")])
+
+foo.add_entry("This is the second one! This one is deliberately longer than the specified width so we can test how well that's handled.",
+              color=(255, 150, 255))
+
+print(foo.as_drawables(5, 5))
