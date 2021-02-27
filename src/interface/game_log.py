@@ -131,11 +131,3 @@ class GameLog:
 
         return drawables
 
-
-foo = GameLog(width=40, height=50,
-              initial_log=[LogEntry("This is the first log item.")])
-
-foo.add_entry("This is the second one! This one is deliberately longer than the specified width so we can test how well that's handled.",
-              color=(255, 150, 255))
-
-print(foo.as_drawables(5, 5))
