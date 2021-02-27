@@ -2,6 +2,8 @@ import tcod
 from typing import List, Optional, Tuple
 from src.playfield import PlayField
 from src.menus import Menu
+from src.entity import Entity
+from src.entity.entities import Mobile
 from math import floor
 
 
@@ -23,6 +25,20 @@ class Interface:
     @property
     def playfield(self):
         return self._pf
+
+    def new_playfield(self, width: int, height: int,
+                      contents: Optional[List[Tuple[int, int, Entity]]] = [],
+                      player_character: Optional[Entity] = None,
+                      player_spawn: Optional[Tuple[int, int]] = None):
+        """Replace the current playfield in this interface with a new one using specified parameters."""
+        pf = PlayField(width=width,
+                       height=height,
+                       contents=[ent for ent in contents],
+                       player_character=player_character,
+                       pc_spawn_point=player_spawn)
+        self._pf_width = pf.width
+        self._pf_height = pf.height
+        self._pf = pf
 
     def new_console(self,
                     min_width: int = 96,
@@ -105,8 +121,30 @@ class Interface:
 
     def __init__(self,
                  context: tcod.context.Context,
-                 playfield: PlayField):
+                 playfield: PlayField,
+                 pf_width: Optional[int] = None,
+                 pf_height: Optional[int] = None):
         self._context = context
         self._pf = playfield
+
+        # If pf_width and pf_height are not explicitly stated, assume based on the console.
+        # Raise a ValueError if they and an initial playfield are given but do not agree.
+        # TODO: This logic should also make room for non-pf, non-menu interface elements
+        if pf_width:
+            if playfield and not pf_width == playfield.width:
+                raise ValueError("pf_width does not correspond to the width of the provided playfield.")
+            else:
+                self._pf_width = pf_width
+        else:
+            self._pf_width = self.console.width
+
+        if pf_height:
+            if playfield and not pf_height == playfield.height:
+                raise ValueError("pf_height does not correspond to the height of the provided playfield.")
+            else:
+                self._pf_height = pf_height
+        else:
+            self._pf_height = self.console.height
+
         self._menus: List[Menu] = []
         self._console: Optional[tcod.console.Console] = self.new_console()
