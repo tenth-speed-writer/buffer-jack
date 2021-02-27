@@ -126,6 +126,8 @@ class Interface:
         if self._menus:
             self._print_menus()
 
+        self._print_game_log(self.playfield.width + 1, 1)
+
         # Send the populated console to screen
         self.context.present(self.console,
                              keep_aspect=True,
