@@ -41,8 +41,8 @@ class Interface:
         self._pf = pf
 
     def new_console(self,
-                    min_width: int = 96,
-                    min_height: int = 64) -> tcod.console.Console:
+                    min_width: int = 48,
+                    min_height: int = 36) -> tcod.console.Console:
         """Returns a new console from self._context based on a specified minimum width and height."""
         return self._context.new_console(min_columns=min_height,
                                          min_rows=min_width,
@@ -56,14 +56,14 @@ class Interface:
     def console(self, c: tcod.console.Console):
         self._console = c
 
-    def _print_playfield(self, center_on: Tuple[int, int]):
+    def _print_playfield(self, center_on: Optional[Tuple[int, int]] = None):
         window_width, window_height = self.playfield.window
         # TODO: Replace this with a mutable camera_center attribute in order to make this player-character-independent
         # Set the camera center equal to the greater of the player's position or half-a-window from the PlayField edge.
         center_x = max(floor(window_width / 2),
-                       self.playfield.player_character.position[0])
+                       self.playfield.player_character.position[0]) if not center_on else center_on[0]
         center_y = max(floor(self.playfield.window[1] / 2),
-                       self.playfield.player_character.position[1])
+                       self.playfield.player_character.position[1]) if not center_on else center_on[1]
 
         drawables = self.playfield.drawables(center_on=(center_x,
                                                         center_y))
@@ -82,9 +82,21 @@ class Interface:
         self.playfield.origin = 1, 1
         self.playfield.window = (self.console.width - 24 - 1,
                                  self.console.height - 12 - 1)
+
+        # Determine where to center the camera
+        player_x, player_y = self.playfield.player_character.position
+        win_w, win_h = self.playfield.window
+
+        # The larger of half the window's size or the player's position, for both dimensions
+        view_center = (max(floor(win_w/2), player_x),
+                       max(floor(win_h/2), player_y))
+        self._print_playfield(center_on=view_center)
+
         if self._menus:
             for m in self._menus:
-                drawables = m.render_menu(x0=10, y0=10)
+                m_width, m_height = m.shape
+                drawables = m.render_menu(x0=floor(self.console.width/2 - m_width/2),
+                                          y0=floor(self.console.height/2 - m_height/2))
                 for d in drawables:
                     x, y, sigil = d
                     self.console.print(x=x,
@@ -102,8 +114,12 @@ class Interface:
 
         # Simulate only if the player isn't in a menu and it's not their turn to act
         pc = self.playfield.player_character
-        if pc.cooldown != 0 or self._menus:
+        if self._menus:
+            pass
+        elif pc and pc.cooldown != 0:
             self.playfield.tick()
+        else:
+            pass
 
         # Refresh console and draw contents
         self.console = self.new_console()
@@ -126,25 +142,24 @@ class Interface:
                  pf_height: Optional[int] = None):
         self._context = context
         self._pf = playfield
+        self._menus: List[Menu] = []
+        self._console: Optional[tcod.console.Console] = self.new_console()
 
         # If pf_width and pf_height are not explicitly stated, assume based on the console.
         # Raise a ValueError if they and an initial playfield are given but do not agree.
-        # TODO: This logic should also make room for non-pf, non-menu interface elements
-        if pf_width:
-            if playfield and not pf_width == playfield.width:
-                raise ValueError("pf_width does not correspond to the width of the provided playfield.")
-            else:
-                self._pf_width = pf_width
-        else:
-            self._pf_width = self.console.width
 
-        if pf_height:
-            if playfield and not pf_height == playfield.height:
-                raise ValueError("pf_height does not correspond to the height of the provided playfield.")
-            else:
-                self._pf_height = pf_height
-        else:
-            self._pf_height = self.console.height
-
-        self._menus: List[Menu] = []
-        self._console: Optional[tcod.console.Console] = self.new_console()
+        # if pf_width:
+        #     if playfield and not pf_width == playfield.width:
+        #         raise ValueError("pf_width does not correspond to the width of the provided playfield.")
+        #     else:
+        #         self._pf_width = pf_width
+        # else:
+        #     self._pf_width = self.console.width
+        #
+        # if pf_height:
+        #     if playfield and not pf_height == playfield.height:
+        #         raise ValueError("pf_height does not correspond to the height of the provided playfield.")
+        #     else:
+        #         self._pf_height = pf_height
+        # else:
+        #     self._pf_height = self.console.height

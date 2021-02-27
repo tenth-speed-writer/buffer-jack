@@ -35,8 +35,18 @@ def main():
 
     # TODO: A better way of handling menu open/close
     menu = Menu(30, 50, menus=interface._menus)
+
+    def _start_the_game(dummy_var):
+        from src.entity.entities import Wall
+        interface.new_playfield(width=60, height=40,
+                                player_character=player_char,
+                                player_spawn=(10, 10),
+                                contents=[(x, 1, Wall())
+                                          for x in range(4, 9)])
+        interface.close_menu(menu)
+
     menu.add_option(MenuOption("Launch game", width=20, height=3,
-                               on_select=lambda: print("Player tried to launch the game")))
+                               on_select=lambda x: _start_the_game(x)))
     interface.open_menu(menu)
 
     while True:

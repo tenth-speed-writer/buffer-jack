@@ -1,6 +1,7 @@
 from typing import Optional, Iterable, Tuple, List, Dict
 from src.entity import Entity
 from src.entity.entities import Static, Mobile
+from src.inputs import GameplayHandler
 from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
@@ -42,7 +43,10 @@ class PlayField:
 
         self._animations: List = []
 
-        self._dispatch = dispatch
+        if dispatch:
+            self._dispatch = dispatch
+        else:
+            self._dispatch = GameplayHandler(self, player_character)
 
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
@@ -57,7 +61,9 @@ class PlayField:
 
         for x, y, e in contents:
             # Add each provided entity (e) into its specified location
-            self.get_cell(x, y).add_entity(entity=e)
+            #self.get_cell(x, y).add_entity(entity=e)
+            print(contents)
+            e.introduce_at(x, y, self)
 
         # TODO: Make declaring a PC optional
         self._player_character = player_character
