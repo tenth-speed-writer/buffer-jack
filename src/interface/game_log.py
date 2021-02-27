@@ -87,6 +87,10 @@ class GameLog:
         self._height = height
         self._log = initial_log
 
+    @property
+    def log(self):
+        return self._log
+
     def add_entry(self, text: str,
                   color: RGBTuple = (255, 255, 255)) -> None:
         """Add a new LogEntry to this GameLog, given valid values of text and optionally color."""

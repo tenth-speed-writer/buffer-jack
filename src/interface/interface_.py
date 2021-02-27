@@ -37,8 +37,6 @@ class Interface:
                        contents=[ent for ent in contents],
                        player_character=player_character,
                        pc_spawn_point=player_spawn)
-        self._pf_width = pf.width
-        self._pf_height = pf.height
         self._pf = pf
 
     def new_console(self,
@@ -74,37 +72,61 @@ class Interface:
                                string=d["character"],
                                fg=d["rgb"])
 
+    def _print_game_log(self, x0, y0):
+        drawables = self._game_log.as_drawables(x0, y0)
+        for d in drawables:
+            x, y, char, color = d
+            self.console.print(x, y, char, color)
+
+    def _print_menus(self):
+        for m in self._menus:
+            # Clear everything rendered so far if this menu is full screen.
+            if m.is_full_screen:
+                self.console.clear()
+
+            # Fetch a list of drawables from the menu in question
+            m_width, m_height = m.shape
+            drawables = m.render_menu(x0=floor(self.console.width / 2 - m_width / 2),
+                                      y0=floor(self.console.height / 2 - m_height / 2))
+
+            # Render the drawables for this menu
+            for d in drawables:
+                x, y, sigil = d
+                self.console.print(x=x,
+                                   y=y,
+                                   string=sigil.character,
+                                   fg=sigil.color)
+
     def print_self(self):
         # TODO: Render other interface elements like stats and UI console
+
+        # Draw the game window border
         self.console.draw_frame(x=0, y=0,
                                 width=self.console.width,
                                 height=self.console.height,
                                 title="BUFFER.JACK()")
+
+        # Tell the playfield its current origin point and window size
         self.playfield.origin = 1, 1
         self.playfield.window = (self.console.width - 24 - 1,
                                  self.console.height - 12 - 1)
 
-        # Determine where to center the camera
+        # Determine where to center the playfield camera
         player_x, player_y = self.playfield.player_character.position
         win_w, win_h = self.playfield.window
 
-        # The larger of half the window's size or the player's position, for both dimensions
+        # The center of the view is the larger of half the window's size or the player's position, for both dimensions.
         view_center = (max(floor(win_w/2), player_x),
                        max(floor(win_h/2), player_y))
+
+        # Print the playfield, now updated with its new window, with the calculated center point.
         self._print_playfield(center_on=view_center)
 
+        # Print menus, if there are any.
         if self._menus:
-            for m in self._menus:
-                m_width, m_height = m.shape
-                drawables = m.render_menu(x0=floor(self.console.width/2 - m_width/2),
-                                          y0=floor(self.console.height/2 - m_height/2))
-                for d in drawables:
-                    x, y, sigil = d
-                    self.console.print(x=x,
-                                       y=y,
-                                       string=sigil.character,
-                                       fg=sigil.color)
+            self._print_menus()
 
+        # Send the populated console to screen
         self.context.present(self.console,
                              keep_aspect=True,
                              integer_scaling=True)
@@ -138,9 +160,11 @@ class Interface:
 
     def __init__(self,
                  context: tcod.context.Context,
-                 playfield: PlayField):
+                 playfield: PlayField,
+                 game_log: GameLog):
         self._context = context
         self._pf = playfield
+        self._game_log = game_log
         self._menus: List[Menu] = []
         self._console: Optional[tcod.console.Console] = self.new_console()
 
