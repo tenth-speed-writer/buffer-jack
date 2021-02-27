@@ -44,14 +44,6 @@ class PlayField:
 
         self._dispatch = dispatch
 
-        self._player_character = player_character
-        if (player_character and not pc_spawn_point) or (pc_spawn_point and not player_character):
-            raise ValueError("If either player_character or pc_spawn_point is given, then both must be provided.")
-        else:
-            self.player_character.introduce_at(x=pc_spawn_point[0],
-                                               y=pc_spawn_point[1],
-                                               playfield=self)
-
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
@@ -67,6 +59,17 @@ class PlayField:
             # Add each provided entity (e) into its specified location
             self.get_cell(x, y).add_entity(entity=e)
 
+        # TODO: Make declaring a PC optional
+        self._player_character = player_character
+        if (player_character and not pc_spawn_point) or (pc_spawn_point and not player_character):
+            raise ValueError("If either player_character or pc_spawn_point is given, then both must be provided.")
+        else:
+            # print("Spawning PC at  {}, {}".format(str(pc_spawn_point[0]),
+            #                                       str(pc_spawn_point[1])))
+            self.player_character.introduce_at(x=pc_spawn_point[0],
+                                               y=pc_spawn_point[1],
+                                               playfield=self)
+
     @property
     def shape(self) -> Tuple[int, int]:
         """Returns the shape of this playfield in terms of (width, height)"""
@@ -79,7 +82,9 @@ class PlayField:
 
     def get_cell(self, x: int, y: int) -> Cell:
         """Returns the specified Cell, so long x and y are within bounds."""
-        if 0 <= x < len(self._field[0]) and 0 <= y < len(self._field):
+        x_lim = self.width - 1
+        y_lim = self.height - 1
+        if 0 <= x <= x_lim and 0 <= y <= y_lim:
             return self._field[y][x]
         else:
             raise ValueError("Location (x:{}, y:{}) is out of bounds!"

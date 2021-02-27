@@ -2,6 +2,8 @@ import tcod
 from src.interface import Interface
 from src.playfield import PlayField
 from src.entity.entities import Mobile
+from src.menus import Menu, MenuOption
+from src.sigil import Sigil
 
 # Default window resolution
 WIDTH, HEIGHT = 720, 480
@@ -17,15 +19,30 @@ def main():
                                height=HEIGHT,
                                tileset=tileset,
                                sdl_window_flags=FLAGS)
-    # Hacky bit goes here: jump us straight to the test playfield
-    playfield = PlayField(60, 40)
+
+    # Hacky bit goes here: jump us straight to the test playfield and inject the PC
+    # TODO: Remove the Interface class dependency on a defined player character!!
+    player_char = Mobile(size=4,
+                         sigil=Sigil("@", priority=3),
+                         name="Player Character")
+    playfield = PlayField(60, 40,
+                          player_character=player_char,
+                          pc_spawn_point=(5, 5))
 
     # Create an interface
     interface = Interface(context=context,
                           playfield=playfield)
 
+    # TODO: A better way of handling menu open/close
+    menu = Menu(30, 50, menus=interface._menus)
+    menu.add_option(MenuOption("Launch game", width=20, height=3,
+                               on_select=lambda: print("Player tried to launch the game")))
+    interface.open_menu(menu)
+
     while True:
         interface.tick()
+        interface.print_self()
+
 
 
 

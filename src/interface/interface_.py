@@ -1,5 +1,5 @@
 import tcod
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from src.playfield import PlayField
 from src.menus import Menu
 from math import floor
@@ -40,10 +40,11 @@ class Interface:
     def console(self, c: tcod.console.Console):
         self._console = c
 
-    def _print_playfield(self):
+    def _print_playfield(self, center_on: Tuple[int, int]):
+        window_width, window_height = self.playfield.window
         # TODO: Replace this with a mutable camera_center attribute in order to make this player-character-independent
         # Set the camera center equal to the greater of the player's position or half-a-window from the PlayField edge.
-        center_x = max(floor(self.playfield.window[0] / 2),
+        center_x = max(floor(window_width / 2),
                        self.playfield.player_character.position[0])
         center_y = max(floor(self.playfield.window[1] / 2),
                        self.playfield.player_character.position[1])
@@ -56,10 +57,6 @@ class Interface:
                                string=d["character"],
                                fg=d["rgb"])
 
-    def _print_menu(self, menu: Menu):
-        x0, y0 = 10, 10
-        menu.render_menu(x0, y0, self.console)
-
     def print_self(self):
         # TODO: Render other interface elements like stats and UI console
         self.console.draw_frame(x=0, y=0,
@@ -71,7 +68,17 @@ class Interface:
                                  self.console.height - 12 - 1)
         if self._menus:
             for m in self._menus:
-                m.render_menu(10, 10, self.console)
+                drawables = m.render_menu(x0=10, y0=10)
+                for d in drawables:
+                    x, y, sigil = d
+                    self.console.print(x=x,
+                                       y=y,
+                                       string=sigil.character,
+                                       fg=sigil.color)
+
+        self.context.present(self.console,
+                             keep_aspect=True,
+                             integer_scaling=True)
 
     def tick(self) -> None:
         """Fetches a fresh console and ticks the playfield.
