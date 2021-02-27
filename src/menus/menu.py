@@ -404,7 +404,7 @@ class Menu:
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
                  contents: Optional[Iterable[MenuOption]] = (),
                  color: RGB = (255, 255, 255),
-                 dispatch: tcod.event.EventDispatch = MenuInputHandler,
+                 dispatch: tcod.event.EventDispatch = None,
                  is_full_screen: bool = False):
         """
         Generate a new menu with specified dimensions.
