@@ -261,4 +261,4 @@ class PlayField:
         if pc not in self.mobiles:
             raise ValueError("pc must be a Mobile and already have been introduced to the playfield.")
         else:
-            self.player_character = pc
+            self._player_character = pc
