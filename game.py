@@ -69,8 +69,6 @@ def main():
 #     GameLog(45, 12,
 #             initial_log=[LogEntry("This is a small log entry"),
 #                          LogEntry("This is an obtusely long log entry used in order to try to exceed the maximum line length and thus test word wrapping in the game log.")])
-#
-#     # TODO: A better way of handling menu open/close
 #     menu = Menu(30, 50, menus=interface._menus)
 #
 #     def _start_the_game(dummy_var):
@@ -104,7 +102,6 @@ def main():
 #                           sdl_window_flags=FLAGS,
 #                           tileset=tileset) as context:
 #         # Render the main menu
-#         # TODO: Make the main menu its own class
 #         console = context.new_console(order="F")
 #         main_menu = Menu(width=console.width - 2,  # -2 to account for the border we've already drawn
 #                          height=console.height - 2)
@@ -183,9 +180,6 @@ def main():
 #         # HANDLING MENUS:
 #         # Draw each menu on top of one another for each menu in a menus variable,
 #         # then pass control of the handler to that menu's handler
-
-
-
 
 
 if __name__ == "__main__":
