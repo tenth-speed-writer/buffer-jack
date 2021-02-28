@@ -457,14 +457,14 @@ class Menu:
         # Assigns a flag to be used by the open_menu logic to eventually break the menu loop
         self._is_open = False
 
+        self._is_full_screen = is_full_screen
+
+        self._menus = menus
+
         if dispatch:
             self._dispatch = dispatch
         else:
             self._dispatch: tcod.event.EventDispatch = MenuInputHandler(self)
-
-        self._is_full_screen = is_full_screen
-
-        self._menus = menus
 
     @property
     def selected(self):

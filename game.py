@@ -1,5 +1,6 @@
 import tcod
 from src.interface import Interface
+from src.interface.game_log import GameLog, LogEntry
 from src.playfield import PlayField
 from src.entity.entities import Mobile
 from src.menus import Menu, MenuOption
@@ -31,7 +32,10 @@ def main():
 
     # Create an interface
     interface = Interface(context=context,
-                          playfield=playfield)
+                          playfield=playfield,
+                          game_log=GameLog(60, 12,
+                                           initial_log=[LogEntry("This is a small log entry"),
+                                                        LogEntry("This is an obtusely long log entry used in order to try to exceed the maximum line length and thus test word wrapping in the game log.")]))
 
     # TODO: A better way of handling menu open/close
     menu = Menu(30, 50, menus=interface._menus)

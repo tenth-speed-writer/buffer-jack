@@ -126,7 +126,7 @@ class Interface:
         if self._menus:
             self._print_menus()
 
-        self._print_game_log(self.playfield.width + 1, 1)
+        self._print_game_log(x0=1, y0=self.playfield.height + 1)
 
         # Send the populated console to screen
         self.context.present(self.console,
@@ -158,6 +158,7 @@ class Interface:
 
         # And hand off events! :)
         for event in tcod.event.get():
+            print(event)
             dispatcher.dispatch(event)
 
     def __init__(self,
