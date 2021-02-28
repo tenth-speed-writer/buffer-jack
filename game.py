@@ -30,7 +30,7 @@ def main():
                 interface=interface,
                 spacing=1)
 
-    def launch_the_game():
+    def launch_the_game(event):
         interface.new_playfield(width=floor(WIDTH/TILESET_SIZE) - 18,
                                 height=floor(HEIGHT/TILESET_SIZE) - 18)
         player_char = Mobile(size=4,

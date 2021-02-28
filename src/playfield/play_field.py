@@ -43,11 +43,6 @@ class PlayField:
 
         self._animations: List = []
 
-        if dispatch:
-            self._dispatch = dispatch
-        else:
-            self._dispatch = GameplayHandler(interface=self.interface)
-
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
@@ -72,8 +67,14 @@ class PlayField:
                                                playfield=self)
 
         # Establish parent/child relationship with the assigned Interface
-        self.interface = interface
-        interface.playfield = self
+        self._interface = interface
+        self._interface.playfield = self
+
+        # If given one, use the specified dispatcher; otherwise, use self.interface.
+        if dispatch:
+            self._dispatch = dispatch
+        elif self._interface:
+            self._dispatch = GameplayHandler(interface=interface)
 
     @property
     def shape(self) -> Tuple[int, int]:
@@ -262,3 +263,7 @@ class PlayField:
             raise ValueError("pc must be a Mobile and already have been introduced to the playfield.")
         else:
             self._player_character = pc
+
+    @property
+    def interface(self):
+        return self._interface
