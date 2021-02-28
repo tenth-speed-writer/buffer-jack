@@ -12,8 +12,8 @@ class PlayField:
     Stored in [y][x] order of ordinal position."""
 
     def __init__(self, width: int, height: int,
-                 player_character: Optional[Mobile] = None,
                  # Should only be special in that we pause sim when the PC's cooldown==0
+                 player_character: Optional[Mobile] = None,
                  pc_spawn_point: Optional[Tuple[int, int]] = None,  # Where to drop the player character
                  window_height: int = 0, window_width: int = 0,
                  window_x0: int = 0, window_y0: int = 0,
