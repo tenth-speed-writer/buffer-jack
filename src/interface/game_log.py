@@ -81,11 +81,12 @@ class LogEntry:
 class GameLog:
     """Keeps a running log of text to be printed for the player during gameplay,
     as well as holds methods to render it into console-printable lines given a specified width."""
-    def __init__(self, width: int, height: int,
+    def __init__(self, width: int, height: int, interface,
                  initial_log: Optional[List[LogEntry]] = []):
         self._width = width
         self._height = height
         self._log = initial_log
+        self._interface = interface
 
     @property
     def log(self):
@@ -130,4 +131,9 @@ class GameLog:
             i -= 1
 
         return drawables
+
+    @property
+    def interface(self):
+        """Returns the parent interface for this GameLog."""
+        return self._interface
 
