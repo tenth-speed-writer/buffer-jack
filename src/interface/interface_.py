@@ -27,6 +27,10 @@ class Interface:
     def playfield(self):
         return self._pf
 
+    @playfield.setter
+    def playfield(self, pf: PlayField):
+        self._pf = pf
+
     def new_playfield(self, width: int, height: int,
                       contents: Optional[List[Tuple[int, int, Entity]]] = [],
                       player_character: Optional[Entity] = None,
@@ -34,6 +38,7 @@ class Interface:
         """Replace the current playfield in this interface with a new one using specified parameters."""
         pf = PlayField(width=width,
                        height=height,
+                       interface=self,
                        contents=[ent for ent in contents],
                        player_character=player_character,
                        pc_spawn_point=player_spawn)
@@ -107,26 +112,29 @@ class Interface:
                                 title="BUFFER.JACK()")
 
         # Tell the playfield its current origin point and window size
-        self.playfield.origin = 1, 1
-        self.playfield.window = (self.console.width - 24 - 1,
-                                 self.console.height - 12 - 1)
+        if self.playfield:
+            self.playfield.origin = 1, 1
+            self.playfield.window = (self.console.width - 24 - 1,
+                                     self.console.height - 12 - 1)
 
-        # Determine where to center the playfield camera
-        player_x, player_y = self.playfield.player_character.position
-        win_w, win_h = self.playfield.window
+            # Determine where to center the playfield camera
+            player_x, player_y = self.playfield.player_character.position
+            win_w, win_h = self.playfield.window
 
-        # The center of the view is the larger of half the window's size or the player's position, for both dimensions.
-        view_center = (max(floor(win_w/2), player_x),
-                       max(floor(win_h/2), player_y))
+            # The center of the view is the larger of half the window's
+            # size or the player's position, for both dimensions.
+            view_center = (max(floor(win_w/2), player_x),
+                           max(floor(win_h/2), player_y))
 
-        # Print the playfield, now updated with its new window, with the calculated center point.
-        self._print_playfield(center_on=view_center)
+            # Print the playfield, now updated with its new window, with the calculated center point.
+            self._print_playfield(center_on=view_center)
 
         # Print menus, if there are any.
         if self._menus:
             self._print_menus()
 
-        self._print_game_log(x0=1, y0=self.playfield.height + 1)
+        if self._game_log:
+            self._print_game_log(x0=1, y0=self.playfield.height + 1)
 
         # Send the populated console to screen
         self.context.present(self.console,
@@ -138,13 +146,14 @@ class Interface:
         Override to apply on-tick interface screw."""
 
         # Simulate only if the player isn't in a menu and it's not their turn to act
-        pc = self.playfield.player_character
-        if self._menus:
-            pass
-        elif pc and pc.cooldown != 0:
-            self.playfield.tick()
-        else:
-            pass
+        if self.playfield:
+            pc = self.playfield.player_character
+            if self._menus:
+                pass
+            elif pc and pc.cooldown != 0:
+                self.playfield.tick()
+            else:
+                pass
 
         # Refresh console and draw contents
         self.console = self.new_console()
