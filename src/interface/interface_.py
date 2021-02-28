@@ -161,31 +161,28 @@ class Interface:
             print(event)
             dispatcher.dispatch(event)
 
+    def new_game_log(self, entries: List[LogEntry] = []):
+        """Returns a new game log with specified entries, sized to fit along the lower edge
+        of the screen and as high as free space beneath the playfield allows."""
+        free_height = self.console.height - self.playfield.window[1]
+
+        self._game_log = GameLog(width=self.console.width,
+                                 height=free_height)
+
+        for e in entries:
+            self.print_to_log(e.text, e.color)
+
+    def print_to_log(self, text: str,
+                     color: Tuple[int, int, int] = (255, 255, 255)):
+        """Appends a new LogEntry to self._game_log, given text and a valid color."""
+        self._game_log.add_entry(text, color)
+
     def __init__(self,
                  context: tcod.context.Context,
-                 playfield: PlayField,
-                 game_log: GameLog):
+                 playfield: Optional[PlayField] = None,
+                 game_log: Optional[GameLog] = None):
         self._context = context
         self._pf = playfield
         self._game_log = game_log
         self._menus: List[Menu] = []
         self._console: Optional[tcod.console.Console] = self.new_console()
-
-        # If pf_width and pf_height are not explicitly stated, assume based on the console.
-        # Raise a ValueError if they and an initial playfield are given but do not agree.
-
-        # if pf_width:
-        #     if playfield and not pf_width == playfield.width:
-        #         raise ValueError("pf_width does not correspond to the width of the provided playfield.")
-        #     else:
-        #         self._pf_width = pf_width
-        # else:
-        #     self._pf_width = self.console.width
-        #
-        # if pf_height:
-        #     if playfield and not pf_height == playfield.height:
-        #         raise ValueError("pf_height does not correspond to the height of the provided playfield.")
-        #     else:
-        #         self._pf_height = pf_height
-        # else:
-        #     self._pf_height = self.console.height
