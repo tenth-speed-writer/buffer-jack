@@ -5,6 +5,7 @@ from src.playfield import PlayField
 from src.entity.entities import Mobile
 from src.menus import Menu, MenuOption
 from src.sigil import Sigil
+from math import floor
 
 # Default window resolution
 WIDTH, HEIGHT = 720, 480
@@ -21,41 +22,73 @@ def main():
                                tileset=tileset,
                                sdl_window_flags=FLAGS)
 
-    # Hacky bit goes here: jump us straight to the test playfield and inject the PC
-    # TODO: Remove the Interface class dependency on a defined player character!!
-    player_char = Mobile(size=4,
-                         sigil=Sigil("@", priority=3),
-                         name="Player Character")
-    playfield = PlayField(60, 40,
-                          player_character=player_char,
-                          pc_spawn_point=(5, 5))
+    interface = Interface(context)
 
-    # Create an interface
-    interface = Interface(context=context,
-                          playfield=playfield,
-                          game_log=GameLog(60, 12,
-                                           initial_log=[LogEntry("This is a small log entry"),
-                                                        LogEntry("This is an obtusely long log entry used in order to try to exceed the maximum line length and thus test word wrapping in the game log.")]))
+    # Mock-up of generating the main menu, which should be its own class, I think
+    menu = Menu(width=floor(WIDTH/TILESET_SIZE),
+                height=floor(HEIGHT/TILESET_SIZE),
+                interface=interface,
+                spacing=1)
 
-    # TODO: A better way of handling menu open/close
-    menu = Menu(30, 50, menus=interface._menus)
+    def launch_the_game():
+        interface.new_playfield(width=floor(WIDTH/TILESET_SIZE) - 18,
+                                height=floor(HEIGHT/TILESET_SIZE) - 18)
+        player_char = Mobile(size=4,
+                             sigil=Sigil("@", priority=3),
+                             name="Player Character")
+        player_char.introduce_at(10, 10, interface.playfield)
+        interface.playfield.player_character = player_char
+        menu.close_menu()
 
-    def _start_the_game(dummy_var):
-        from src.entity.entities import Wall
-        interface.new_playfield(width=60, height=40,
-                                player_character=player_char,
-                                player_spawn=(10, 10),
-                                contents=[(x, 1, Wall())
-                                          for x in range(4, 9)])
-        interface.close_menu(menu)
-
-    menu.add_option(MenuOption("Launch game", width=20, height=3,
-                               on_select=lambda x: _start_the_game(x)))
+    menu.add_option(MenuOption(text="Start Game",
+                               width=24, height=5,
+                               on_select=launch_the_game))
     interface.open_menu(menu)
 
     while True:
         interface.tick()
         interface.print_self()
+
+# def main():
+#     # Load the tileset and context
+#     tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
+#                                           charmap=tcod.tileset.CHARMAP_CP437)
+#     context = tcod.context.new(width=WIDTH,
+#                                height=HEIGHT,
+#                                tileset=tileset,
+#                                sdl_window_flags=FLAGS)
+#
+#     player_char = Mobile(size=4,
+#                          sigil=Sigil("@", priority=3),
+#                          name="Player Character")
+#     #playfield = PlayField(width=)
+#
+#     # Create an interface
+#     interface = Interface(context=context)
+#
+#     GameLog(45, 12,
+#             initial_log=[LogEntry("This is a small log entry"),
+#                          LogEntry("This is an obtusely long log entry used in order to try to exceed the maximum line length and thus test word wrapping in the game log.")])
+#
+#     # TODO: A better way of handling menu open/close
+#     menu = Menu(30, 50, menus=interface._menus)
+#
+#     def _start_the_game(dummy_var):
+#         from src.entity.entities import Wall
+#         interface.new_playfield(width=60, height=40,
+#                                 player_character=player_char,
+#                                 player_spawn=(10, 10),
+#                                 contents=[(x, 1, Wall())
+#                                           for x in range(4, 9)])
+#         interface.close_menu(menu)
+#
+#     menu.add_option(MenuOption("Launch game", width=20, height=3,
+#                                on_select=lambda x: _start_the_game(x)))
+#     interface.open_menu(menu)
+#
+#     while True:
+#         interface.tick()
+#         interface.print_self()
 
 
 
