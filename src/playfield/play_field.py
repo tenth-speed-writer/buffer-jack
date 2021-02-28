@@ -12,6 +12,7 @@ class PlayField:
     Stored in [y][x] order of ordinal position."""
 
     def __init__(self, width: int, height: int,
+                 interface,
                  # Should only be special in that we pause sim when the PC's cooldown==0
                  player_character: Optional[Mobile] = None,
                  pc_spawn_point: Optional[Tuple[int, int]] = None,  # Where to drop the player character
@@ -60,8 +61,6 @@ class PlayField:
 
         for x, y, e in contents:
             # Add each provided entity (e) into its specified location
-            #self.get_cell(x, y).add_entity(entity=e)
-            print(contents)
             e.introduce_at(x, y, self)
 
         self._player_character = player_character
@@ -71,6 +70,10 @@ class PlayField:
             self.player_character.introduce_at(x=pc_spawn_point[0],
                                                y=pc_spawn_point[1],
                                                playfield=self)
+
+        # Establish parent/child relationship with the assigned Interface
+        self.interface = interface
+        interface.playfield = self
 
     @property
     def shape(self) -> Tuple[int, int]:
