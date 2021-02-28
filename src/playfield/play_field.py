@@ -166,8 +166,8 @@ class PlayField:
         # d = max([c.position[1] for c in cells])
         # print ("x:{} - {},   y:{} - {}".format(str(a), str(b), str(c), str(d)))
 
-        drawables = [{"x": c.position[0] - window_x0,
-                      "y": c.position[1] - window_y0,
+        drawables = [{"x": c.position[0] - window_x0 + 1,
+                      "y": c.position[1] - window_y0 + 1,
                       "character": c.sigils[0].character,
                       "priority": c.sigils[0].priority,
                       "rgb": c.sigils[0].color}
@@ -238,7 +238,7 @@ class PlayField:
 
     @origin.setter
     def origin(self, new_origin: Tuple[int, int]):
-        """Assigns a new tuple(x, y) as the topleft console cell from which to render this playfield."""
+        """Assigns a new tuple(x, y) as the top left console cell from which to render this playfield."""
         x0, y0 = new_origin
         if x0 >= 0 and y0 >= 0:
             self._window_x0 = x0

@@ -3,6 +3,7 @@ from src.interface import Interface
 from src.interface.game_log import GameLog, LogEntry
 from src.playfield import PlayField
 from src.entity.entities import Mobile
+from src.entity.landscape import WalkableTerrain
 from src.menus import Menu, MenuOption
 from src.sigil import Sigil
 from math import floor
@@ -31,14 +32,28 @@ def main():
                 spacing=1)
 
     def launch_the_game(event):
-        interface.new_playfield(width=floor(WIDTH/TILESET_SIZE) - 18,
-                                height=floor(HEIGHT/TILESET_SIZE) - 18)
+        interface.new_playfield(width=200,
+                                height=80)
+
+        floors = []
+        for y in range(0, 40):
+            floors.append([(x, y, WalkableTerrain())
+                           for x in range(0, 60)])
+
+        for f in sum(floors, []):
+            x, y, ent = f
+            ent.introduce_at(x, y, interface.playfield)
+
         player_char = Mobile(size=4,
                              sigil=Sigil("@", priority=3),
                              name="Player Character")
         player_char.introduce_at(10, 10, interface.playfield)
         interface.playfield.player_character = player_char
+
+        interface.playfield.origin = (2, 2)
+        interface.
         menu.close_menu()
+
 
     menu.add_option(MenuOption(text="Start Game",
                                width=24, height=5,
@@ -46,6 +61,9 @@ def main():
     interface.open_menu(menu)
 
     while True:
+        win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
+        if interface.playfield:
+            interface.playfield.window = win_x, win_y
         interface.tick()
         interface.print_self()
 
