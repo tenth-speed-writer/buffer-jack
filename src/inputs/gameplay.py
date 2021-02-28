@@ -74,8 +74,7 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
     """Handles all non-menu, non-specialty gameplay key commands.
 
     Be sure to create a new instance when moving to a new PlayField."""
-    def __init__(self, playfield,
-                 player_entity: entities.Mobile):
+    def __init__(self, interface):
         """Initializes with references to the active playfield and player entity.
         Thus, be sure to create a new GameplayHandler when moving to a new PlayField,
         and to do so after the player's entity has been introduced to it.."""
@@ -84,8 +83,15 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
 
         super().__init__()
 
-        self._playfield = playfield
-        self._player_entity = player_entity
+        self._interface = interface
+
+    @property
+    def interface(self):
+        return self._interface
+
+    @property
+    def player_character(self):
+        return self._interface.playfield.player_character
 
     # Internal methods are prefixed cmd_.
     # The on-event methods we're overwriting are prefaced ev_.
@@ -97,24 +103,24 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
         """Run on a movement command."""
 
         # Get the player, their position, and their delta
-        pc = self._player_entity
+        pc = self.player_character
         x, y = pc.position
         delta = _get_position_delta(event)
 
         # Calculate new position and see if it's in range
         x_i, y_i = x + delta.dx, y + delta.dy
-        x_in_range = 0 <= x_i < self._playfield.width
-        y_in_range = 0 <= y_i < self._playfield.height
+        x_in_range = 0 <= x_i < self.interface.playfield.width
+        y_in_range = 0 <= y_i < self.interface.playfield.height
 
         if x_in_range and y_in_range:
             # Get the cell after testing for range, as it would bug out if the cell isn't there
-            cell = self._playfield.get_cell(x=x_i, y=y_i)
+            cell = self.interface.playfield.get_cell(x=x_i, y=y_i)
             if cell.passable:
                 pc.move_to(x=x_i, y=y_i)
 
     def cmd_wait(self, ticks=10) -> None:
         """Called when a player briefly waits. Runs another 10 (default) ticks."""
-        self._player_entity.cooldown = ticks
+        self.player_character.cooldown = ticks
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         """Fires on alt+F4 or window close request"""
