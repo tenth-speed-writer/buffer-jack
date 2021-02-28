@@ -46,7 +46,7 @@ class PlayField:
         if dispatch:
             self._dispatch = dispatch
         else:
-            self._dispatch = GameplayHandler(self, player_character)
+            self._dispatch = GameplayHandler(interface=self.interface)
 
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
