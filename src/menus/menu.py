@@ -388,17 +388,17 @@ class Menu:
         if opt in self._contents:
             self._contents.remove(opt)
 
+    # TODO: Replace this behavior with one which respects ._menus as a protected member
     def open_menu(self) -> None:
         """Set this menu as the last element of the interface menus list"""
-        self._menus.append(self)
+        self.interface.add_menu(self)
 
     def close_menu(self) -> None:
-        self._menus.remove(self)
-        del self
+        self.interface.close_menu(self)
 
     def __init__(self,
                  width: int, height: int,
-                 menus: List,
+                 interface,
                  spacing: int = 2,
                  has_border: bool = False,
                  padding: Tuple[int, int, int, int] = (1, 1, 1, 1),
@@ -410,7 +410,7 @@ class Menu:
         Generate a new menu with specified dimensions.
         :param width: Total width of the menu, in tiles
         :param height: Total height of the menu, in tiles
-        :param menus: The ordered list of active menus from/to which to add/remove this menu
+        :param interface: The parent interface of this menu
         :param spacing: How many empty rows to draw between each menu item
         :param padding: A tuple of (top, right, bottom, left), in tiles with which to pad the menu
         :param contents: An iterable of MenuOption instances, in order, to be added to this menu. Can be empty.
@@ -459,7 +459,7 @@ class Menu:
 
         self._is_full_screen = is_full_screen
 
-        self._menus = menus
+        self._interface = interface
 
         if dispatch:
             self._dispatch = dispatch
@@ -548,7 +548,7 @@ class Menu:
         opt_y0 = self.pad_top
         locations = [(opt_x0, opt_y0)]  # Valid top left corner tiles for drawing MenuItems
 
-        dy = self.spacing + self.contents[0]._height  # Determine how many y steps are between each top left
+        dy = self.spacing + self.contents[0].size[1]  # Determine how many y steps are between each top left
         yi = opt_y0 + dy  # The first new step will be dy steps down
         while (yi + dy) < h:
             locations.append((x0, yi))  # As will each additional one.
@@ -575,3 +575,7 @@ class Menu:
     @is_full_screen.setter
     def is_full_screen(self, truth: bool) -> None:
         self._is_full_screen = truth
+
+    @property
+    def interface(self):
+        return self._interface
