@@ -35,7 +35,6 @@ class PlayField:
         # populating the _field variable by the row.
         self._field: List[List[Cell]] = []
 
-        # Assert minimum visual window dimensions are no less than 2x2
         self._window_height = window_height
         self._window_width = window_width
         self._window_x0 = window_x0
