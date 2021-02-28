@@ -137,9 +137,7 @@ class Interface:
             self._print_game_log(x0=1, y0=self.playfield.height + 1)
 
         # Send the populated console to screen
-        self.context.present(self.console,
-                             keep_aspect=True,
-                             integer_scaling=True)
+        self.context.present(self.console)
 
     def tick(self) -> None:
         """Fetches a fresh console and ticks the playfield.
@@ -167,7 +165,6 @@ class Interface:
 
         # And hand off events! :)
         for event in tcod.event.get():
-            print(event)
             dispatcher.dispatch(event)
 
     def new_game_log(self, entries: List[LogEntry] = []):
