@@ -65,13 +65,10 @@ class PlayField:
             print(contents)
             e.introduce_at(x, y, self)
 
-        # TODO: Make declaring a PC optional
         self._player_character = player_character
         if (player_character and not pc_spawn_point) or (pc_spawn_point and not player_character):
             raise ValueError("If either player_character or pc_spawn_point is given, then both must be provided.")
-        else:
-            # print("Spawning PC at  {}, {}".format(str(pc_spawn_point[0]),
-            #                                       str(pc_spawn_point[1])))
+        elif player_character:
             self.player_character.introduce_at(x=pc_spawn_point[0],
                                                y=pc_spawn_point[1],
                                                playfield=self)
