@@ -143,15 +143,12 @@ class Interface:
         """Fetches a fresh console and ticks the playfield.
         Override to apply on-tick interface screw."""
 
-        # Simulate only if the player isn't in a menu and it's not their turn to act
-        if self.playfield:
+        # Simulate only if there is a player character, if there is and the player
+        # they aren't in a menu, or there is and it's not their turn to act.
+        if self.playfield and not self._menus:
             pc = self.playfield.player_character
-            if self._menus:
-                pass
-            elif pc and pc.cooldown != 0:
+            if pc and pc.cooldown != 0:
                 self.playfield.tick()
-            else:
-                pass
 
         # Refresh console and draw contents
         self.console = self.new_console()
