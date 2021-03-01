@@ -7,11 +7,17 @@ from src.entity.landscape import WalkableTerrain
 from src.menus import Menu, MenuOption
 from src.sigil import Sigil
 from math import floor
+from time import time_ns
 
 # Default window resolution
 WIDTH, HEIGHT = 720, 480
 TILESET_SIZE = 16
 FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
+
+
+def __time_ms():
+    """We're gonna clock the game in milliseconds, so using 1000 * epoch nanoseconds should be fine."""
+    return time_ns()*1000
 
 
 def main():
@@ -51,21 +57,28 @@ def main():
         interface.playfield.player_character = player_char
 
         interface.playfield.origin = (2, 2)
-        interface.
         menu.close_menu()
-
 
     menu.add_option(MenuOption(text="Start Game",
                                width=24, height=5,
                                on_select=launch_the_game))
     interface.open_menu(menu)
 
+    time = __time_ms()
+    tick_length = 15  # Milliseconds, a little under 60 FPS
     while True:
-        win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
-        if interface.playfield:
-            interface.playfield.window = win_x, win_y
-        interface.tick()
-        interface.print_self()
+        now_ms = __time_ms()
+
+        # Only run the main loop logic if we've reached the next 15ms system tick
+        if now_ms - time >= tick_length:
+            win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
+            if interface.playfield:
+                interface.playfield.window = win_x, win_y
+            interface.tick()
+            interface.print_self()
+
+        # Reset the reference time to the time at which we started this loop
+        time = now_ms
 
 # def main():
 #     # Load the tileset and context
