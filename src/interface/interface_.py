@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 from src.playfield import PlayField
 from src.menus import Menu
 from src.entity import Entity
+from src.animation import Animation
 from src.entity.entities import Mobile
 from .game_log import LogEntry, GameLog
 from math import floor
@@ -81,7 +82,10 @@ class Interface:
         drawables = self._game_log.as_drawables(x0, y0)
         for d in drawables:
             x, y, char, color = d
-            self.console.print(x, y, char, color)
+            self.console.print(x=x,
+                               y=y,
+                               string=char,
+                               fg=color)
 
     def _print_menus(self):
         for m in self._menus:
@@ -129,12 +133,28 @@ class Interface:
             # Print the playfield, now updated with its new window, with the calculated center point.
             self._print_playfield(center_on=view_center)
 
+        # Draw animations that aren't always_on_top, if there are any.
+        [self.console.print(x=x,
+                            y=y,
+                            string=anim.get_sigil().character,
+                            fg=anim.get_sigil().color)
+         for x, y, anim in self.animations
+         if not anim.always_on_top]
+
         # Print menus, if there are any.
         if self._menus:
             self._print_menus()
 
         if self._game_log:
             self._print_game_log(x0=1, y0=self.playfield.height + 1)
+
+        # Draw animations that ARE always_on_top, if there are any.
+        [self.console.print(x=x,
+                            y=y,
+                            string=anim.get_sigil().character,
+                            fg=anim.get_sigil().color)
+         for x, y, anim in self.animations
+         if anim.always_on_top]
 
         # Send the populated console to screen
         self.context.present(self.console)
@@ -170,7 +190,8 @@ class Interface:
         free_height = self.console.height - self.playfield.window[1]
 
         self._game_log = GameLog(width=self.console.width,
-                                 height=free_height)
+                                 height=free_height,
+                                 interface=self)
 
         for e in entries:
             self.print_to_log(e.text, e.color)
@@ -180,6 +201,28 @@ class Interface:
         """Appends a new LogEntry to self._game_log, given text and a valid color."""
         self._game_log.add_entry(text, color)
 
+    @property
+    def animations(self) -> List[Tuple[int, int, Animation]]:
+        """Returns a list of tuples of (x, y, Animation)"""
+        return self._animations
+
+    def clear_animations_at(self, x, y):
+        """.remove()s any animation from ._animations that match a specified x and y"""
+        [self._animations.remove((_x, _y, a))
+         for _x, _y, a in self._animations
+         if x == _x and y == _y]
+
+    def clear_animation(self, a: Animation):
+        """Alternative way to remove a specific animation--matches by a specified Animation instance 'a'"""
+        [self._animations.remove((x, y, _a))
+         for x, y, _a in self._animations
+         if _a is a]
+
+    def add_animation(self, x, y, animation: Animation):
+        """Adds an animation to .animations, first clearing any existing animations with the same x, y coordinates."""
+        self.clear_animations_at(x, y)
+        self._animations.append((x, y, animation))
+
     def __init__(self,
                  context: tcod.context.Context,
                  playfield: Optional[PlayField] = None,
@@ -188,4 +231,5 @@ class Interface:
         self._pf = playfield
         self._game_log = game_log
         self._menus: List[Menu] = []
+        self._animations: List[Tuple[int, int, Animation]] = []
         self._console: Optional[tcod.console.Console] = self.new_console()
