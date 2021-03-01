@@ -1,7 +1,5 @@
 import tcod
 from src.interface import Interface
-from src.interface.game_log import GameLog, LogEntry
-from src.playfield import PlayField
 from src.animation import Animation, AnimationFrame
 from src.entity.entities import Mobile
 from src.entity.landscape import WalkableTerrain
