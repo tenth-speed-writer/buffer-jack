@@ -70,17 +70,13 @@ def main():
                                on_select=launch_the_game))
     interface.open_menu(menu)
 
-    last_tick = __time_ms()
-    tick_length = 50  # Milliseconds, leading to 10 FPS
+    last_tick = __time_ms()  # In epoch milliseconds
+    tick_length = 50         # Milliseconds per engine tick
     while True:
         now_ms = __time_ms()
 
         # Only run the main loop logic if we've reached the next clock increment
         if now_ms - last_tick >= tick_length:
-            #win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
-            # if interface.playfield:
-            #     interface.playfield.window = win_x, win_y
-
             if interface.playfield:
                 win_width, win_height = context.recommended_console_size(min_columns=50,
                                                                          min_rows=40)
@@ -88,7 +84,7 @@ def main():
             interface.tick()
             interface.print_self()
 
-            # Reset the reference time to the time at which we started this loop
+            # Forward the reference time to the time at which we started this batch of logic
             last_tick = now_ms
 
 # def main():
