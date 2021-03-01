@@ -157,7 +157,8 @@ class Interface:
          if anim.always_on_top]
 
         # Send the populated console to screen
-        self.context.present(self.console)
+        self.context.present(self.console,
+                             keep_aspect=True)
 
     def tick(self) -> None:
         """Fetches a fresh console, ticks the playfield, and ticks & cleans up animations.

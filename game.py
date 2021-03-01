@@ -18,7 +18,7 @@ FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
 
 def __time_ms():
     """We're gonna clock the game in milliseconds, so using 1000 * epoch nanoseconds should be fine."""
-    return time_ns()*1000
+    return int(time_ns()/1000000)
 
 
 def main():
@@ -70,21 +70,26 @@ def main():
                                on_select=launch_the_game))
     interface.open_menu(menu)
 
-    time = __time_ms()
-    tick_length = 15  # Milliseconds, a little under 60 FPS
+    last_tick = __time_ms()
+    tick_length = 50  # Milliseconds, leading to 10 FPS
     while True:
         now_ms = __time_ms()
 
-        # Only run the main loop logic if we've reached the next 15ms system tick
-        if now_ms - time >= tick_length:
-            win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
+        # Only run the main loop logic if we've reached the next clock increment
+        if now_ms - last_tick >= tick_length:
+            #win_x, win_y = floor(WIDTH / TILESET_SIZE) - 18, floor(HEIGHT/TILESET_SIZE - 18)
+            # if interface.playfield:
+            #     interface.playfield.window = win_x, win_y
+
             if interface.playfield:
-                interface.playfield.window = win_x, win_y
+                win_width, win_height = context.recommended_console_size(min_columns=50,
+                                                                         min_rows=40)
+                interface.playfield.window = (win_width - 20, win_height - 12)
             interface.tick()
             interface.print_self()
 
-        # Reset the reference time to the time at which we started this loop
-        time = now_ms
+            # Reset the reference time to the time at which we started this loop
+            last_tick = now_ms
 
 # def main():
 #     # Load the tileset and context
