@@ -90,7 +90,6 @@ class Animation:
             elif self._current_frame.has_finished:
                 # Remove a finished animation from the start of the queue
                 self._queue.popleft()
-                self._current_frame.decrement()
 
             else:
                 # If nothing else to do, just decrement the current frame.
