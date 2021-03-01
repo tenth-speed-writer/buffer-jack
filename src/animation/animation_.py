@@ -45,7 +45,8 @@ class Animation:
     @param frames An iterable of frames, in FIFO order."""
     def __init__(self,
                  frames=Iterable[AnimationFrame],
-                 repeating: bool = False):
+                 repeating: bool = False,
+                 always_on_top: bool = False):
         if not frames:
             raise ValueError("Cannot create an Animation with an empty frames queue!")
 
@@ -55,6 +56,8 @@ class Animation:
 
         # If the animation repeats, it'll need to remember its full frame queue.
         self._full_queue: deque = deque([el for el in frames])
+
+        self.always_on_top = always_on_top
 
     @property
     def _queue_is_empty(self) -> bool:
