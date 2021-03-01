@@ -58,10 +58,10 @@ def main():
         interface.playfield.player_character = player_char
 
         interface.playfield.origin = (2, 2)
-        interface.add_animation(7, 7, Animation(frames=[AnimationFrame(Sigil("\\"), 30),
-                                                        AnimationFrame(Sigil("|"), 30),
-                                                        AnimationFrame(Sigil("/"), 30),
-                                                        AnimationFrame(Sigil("-"), 30)],
+        interface.add_animation(7, 7, Animation(frames=[AnimationFrame(Sigil("\\"), 5),
+                                                        AnimationFrame(Sigil("|"), 5),
+                                                        AnimationFrame(Sigil("/"), 5),
+                                                        AnimationFrame(Sigil("-"), 5)],
                                                 repeating=True))
         menu.close_menu()
 

@@ -160,8 +160,8 @@ class Interface:
         self.context.present(self.console)
 
     def tick(self) -> None:
-        """Fetches a fresh console and ticks the playfield.
-        Override to apply on-tick interface screw."""
+        """Fetches a fresh console, ticks the playfield, and ticks & cleans up animations.
+        Override or call via super() to apply on-tick interface screw."""
 
         # Simulate only if there is a player character, if there is and the player
         # they aren't in a menu, or there is and it's not their turn to act.

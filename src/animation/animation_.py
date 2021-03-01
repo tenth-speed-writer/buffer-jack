@@ -85,14 +85,13 @@ class Animation:
         and (if repeating) repopulating the queue if necessary."""
 
         if self.running:
-            if self.repeating and self._queue_is_empty:
-                # Repopulate a repeating animation's queue
-                self._queue = deepcopy(self._full_queue)
-                self._current_frame.decrement()
-
-            elif self._current_frame.has_finished:
-                # Remove a finished animation from the start of the queue
+            if self._current_frame.has_finished:
+                # Remove a finished animation from the start of the queue.
+                # If this Animation repeats, reload the queue from the full queue.
                 self._queue.popleft()
+
+                if self._queue_is_empty and self.repeating:
+                    self._queue = deepcopy(self._full_queue)
 
             else:
                 # If nothing else to do, just decrement the current frame.
