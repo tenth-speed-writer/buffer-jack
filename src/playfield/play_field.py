@@ -2,10 +2,10 @@ from typing import Optional, Iterable, Tuple, List, Dict
 from src.entity import Entity
 from src.entity.entities import Static, Mobile
 from src.inputs import GameplayHandler
+from src.animation import Animation, AnimationFrame, OverlappingSigilAnimation
 from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
-
 
 class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
@@ -267,3 +267,29 @@ class PlayField:
     @property
     def interface(self):
         return self._interface
+
+    def draw_overlap_animations(self):
+        """Tell the interface to make an animation for each cell with more than one top sigil."""
+        win_x, win_y = self.origin
+        win_h, win_w = self.window
+
+        # Gather a 2D list of visible (x, y) pairs and then flatten it
+        visible_positions = sum([[(x, y)
+                                  for x in range(win_x, win_w)]
+                                 for y in range(win_y, win_h)],
+                                [])
+
+        # Gather a list of cells in those positions which have more than one top-priority sigil
+        cells = [c for c in self.get_cells(cells=visible_positions)
+                 if len(c.sigils) > 1]
+        for c in cells:
+            frames_per_item = 10
+            frames = [AnimationFrame(sig, frames_per_item)
+                      for sig in c.sigils]
+            anim = OverlappingSigilAnimation(frames, repeating=True)
+
+            # Add the animation at the cell's position, subtracting the window adjustment from each dimension.
+            cell_x, cell_y = c.position
+            self.interface.add_animation(x=cell_x - self._window_x0,
+                                         y=cell_y - self._window_y0,
+                                         animation=anim)

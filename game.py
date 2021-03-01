@@ -61,6 +61,8 @@ def main():
                                                         AnimationFrame(Sigil("/"), 5),
                                                         AnimationFrame(Sigil("-"), 5)],
                                                 repeating=True))
+        blue_floor = WalkableTerrain(color=(50, 50, 255))
+        blue_floor.introduce_at(12, 12, interface.playfield)
         menu.close_menu()
 
     menu.add_option(MenuOption(text="Start Game",
