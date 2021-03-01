@@ -170,6 +170,14 @@ class Interface:
             if pc and pc.cooldown != 0:
                 self.playfield.tick()
 
+        # Tick any animations that might be running
+        [anim.tick() for x, y, anim in self.animations]
+
+        # Remove any finished animations
+        [self.clear_animation(anim)
+         for x, y, anim in self.animations
+         if not anim.running]
+
         # Refresh console and draw contents
         self.console = self.new_console()
         self.print_self()
