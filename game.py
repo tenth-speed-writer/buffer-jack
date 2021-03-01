@@ -2,6 +2,7 @@ import tcod
 from src.interface import Interface
 from src.interface.game_log import GameLog, LogEntry
 from src.playfield import PlayField
+from src.animation import Animation, AnimationFrame
 from src.entity.entities import Mobile
 from src.entity.landscape import WalkableTerrain
 from src.menus import Menu, MenuOption
@@ -57,6 +58,11 @@ def main():
         interface.playfield.player_character = player_char
 
         interface.playfield.origin = (2, 2)
+        interface.add_animation(7, 7, Animation(frames=[AnimationFrame(Sigil("\\"), 30),
+                                                        AnimationFrame(Sigil("|"), 30),
+                                                        AnimationFrame(Sigil("/"), 30),
+                                                        AnimationFrame(Sigil("-"), 30)],
+                                                repeating=True))
         menu.close_menu()
 
     menu.add_option(MenuOption(text="Start Game",
