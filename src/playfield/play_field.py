@@ -7,6 +7,7 @@ from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
 
+
 class PlayField:
     """Contains an easily-accessed two-dimensional array of Cell objects.
     Stored in [y][x] order of ordinal position."""
@@ -290,6 +291,13 @@ class PlayField:
 
             # Add the animation at the cell's position, subtracting the window adjustment from each dimension.
             cell_x, cell_y = c.position
-            self.interface.add_animation(x=cell_x - self._window_x0,
-                                         y=cell_y - self._window_y0,
-                                         animation=anim)
+            win_x, win_y = self.origin
+            anim_x, anim_y = cell_x - win_x, cell_y - win_y
+            anim_positions = [(x, y) for x, y, anim in self.interface.animations]
+
+            # Don't overwrite the animation if there's already one there.
+            # Only refresh OverlappingSigilAnimations when the player takes an action.
+            if not (anim_x, anim_y in anim_positions):
+                self.interface.add_animation(x=cell_x - win_x,
+                                             y=cell_y - win_y,
+                                             animation=anim)

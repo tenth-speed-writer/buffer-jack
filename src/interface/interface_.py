@@ -108,7 +108,6 @@ class Interface:
 
     def print_self(self):
         # TODO: Render other interface elements like stats and UI console
-
         # Draw the game window border
         self.console.draw_frame(x=0, y=0,
                                 width=self.console.width,
@@ -130,8 +129,10 @@ class Interface:
             view_center = (max(floor(win_w/2), player_x),
                            max(floor(win_h/2), player_y))
 
-            # Print the playfield, now updated with its new window, with the calculated center point.
+            # Print the playfield (and its overlap animations),
+            # now updated with its new window, with the calculated center point.
             self._print_playfield(center_on=view_center)
+            self.playfield.draw_overlap_animations()
 
         # Draw animations that aren't always_on_top, if there are any.
         [self.console.print(x=x,
@@ -171,6 +172,10 @@ class Interface:
             if pc and pc.cooldown != 0:
                 self.playfield.tick()
 
+        # Refresh console and draw contents
+        self.console = self.new_console()
+        self.print_self()
+
         # Tick any animations that might be running
         [anim.tick() for x, y, anim in self.animations]
 
@@ -178,10 +183,10 @@ class Interface:
         [self.clear_animation(anim)
          for x, y, anim in self.animations
          if not anim.running]
-
-        # Refresh console and draw contents
-        self.console = self.new_console()
-        self.print_self()
+        #
+        # for x, y, anim in self.animations:
+        #     print("{}, {}".format(anim.get_sigil().character,
+        #                           anim.get_sigil().color))
 
         # Determine whether to use a menu dispatcher or the playfield dispatcher
         if self._menus:
