@@ -241,6 +241,7 @@ class PlayField:
     def origin(self, new_origin: Tuple[int, int]):
         """Assigns a new tuple(x, y) as the top left console cell from which to render this playfield."""
         x0, y0 = new_origin
+
         if x0 >= 0 and y0 >= 0:
             self._window_x0 = x0
             self._window_y0 = y0
@@ -269,15 +270,18 @@ class PlayField:
     def interface(self):
         return self._interface
 
-    def draw_overlap_animations(self):
+    def draw_overlap_animations(self, center_on: Tuple[int, int]):
         """Tell the interface to make an animation for each cell with more than one top sigil."""
-        win_x, win_y = self.origin
         win_h, win_w = self.window
+        center_x, center_y = center_on
+
+        window_x0 = max(floor(center_x - 0.5 * self.window[0]), 0)
+        window_y0 = max(floor(center_y - 0.5 * self.window[1]), 0)
 
         # Gather a 2D list of visible (x, y) pairs and then flatten it
         visible_positions = sum([[(x, y)
-                                  for x in range(win_x, win_w)]
-                                 for y in range(win_y, win_h)],
+                                  for x in range(window_x0, win_w)]
+                                 for y in range(window_y0, win_h)],
                                 [])
 
         # Gather a list of cells in those positions which have more than one top-priority sigil
@@ -291,13 +295,9 @@ class PlayField:
 
             # Add the animation at the cell's position, subtracting the window adjustment from each dimension.
             cell_x, cell_y = c.position
-            win_x, win_y = self.origin
-            anim_x, anim_y = cell_x - win_x, cell_y - win_y
             anim_positions = [(x, y) for x, y, anim in self.interface.animations]
 
-            # Don't overwrite the animation if there's already one there.
-            # Only refresh OverlappingSigilAnimations when the player takes an action.
-            if not (anim_x, anim_y in anim_positions):
-                self.interface.add_animation(x=cell_x - win_x,
-                                             y=cell_y - win_y,
-                                             animation=anim)
+            anim_x, anim_y = cell_x - window_x0, cell_y - window_y0
+
+            if not ((anim_x, anim_y) in anim_positions):
+                self.interface.add_animation(anim_x, anim_y, anim)

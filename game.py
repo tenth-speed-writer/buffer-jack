@@ -2,7 +2,7 @@ import tcod
 from src.interface import Interface
 from src.animation import Animation, AnimationFrame
 from src.entity.entities import Mobile
-from src.entity.landscape import WalkableTerrain
+from src.entity.landscape import WalkableTerrain, Wall
 from src.menus import Menu, MenuOption
 from src.sigil import Sigil
 from math import floor
@@ -49,6 +49,11 @@ def main():
             x, y, ent = f
             ent.introduce_at(x, y, interface.playfield)
 
+        walls = [(x, 20, Wall()) for x in range(0, 11)]
+        for w in walls:
+            x, y, ent = w
+            ent.introduce_at(x, y, interface.playfield)
+
         player_char = Mobile(size=4,
                              sigil=Sigil("@", priority=3),
                              name="Player Character")
@@ -62,7 +67,11 @@ def main():
                                                         AnimationFrame(Sigil("-"), 5)],
                                                 repeating=True))
         blue_floor = WalkableTerrain(color=(50, 50, 255))
+        blue_floor.sigil = Sigil("!", priority=blue_floor.sigil.priority)
         blue_floor.introduce_at(12, 12, interface.playfield)
+
+        # print(interface.playfield.get_cell(12, 12).sigils)
+
         menu.close_menu()
 
     menu.add_option(MenuOption(text="Start Game",

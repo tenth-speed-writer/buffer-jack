@@ -132,7 +132,7 @@ class Interface:
             # Print the playfield (and its overlap animations),
             # now updated with its new window, with the calculated center point.
             self._print_playfield(center_on=view_center)
-            self.playfield.draw_overlap_animations()
+            self.playfield.draw_overlap_animations(center_on=view_center)
 
         # Draw animations that aren't always_on_top, if there are any.
         [self.console.print(x=x,
