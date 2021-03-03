@@ -1,8 +1,8 @@
 import tcod
 #from src.playfield import PlayField, Cell
-from src.entity import entities, Entity
+from src.animation import OverlappingSigilAnimation
 from .position_delta import PositionDelta
-
+from math import floor
 
 def _is_movement_key(event: tcod.event.Event) -> bool:
     """Returns true IIF event is a keydown event whose sym corresponds to a movement key."""
@@ -117,6 +117,15 @@ class GameplayHandler(tcod.event.EventDispatch[None]):
             cell = self.interface.playfield.get_cell(x=x_i, y=y_i)
             if cell.passable:
                 pc.move_to(x=x_i, y=y_i)
+
+                # We can be sure that the window shifted if the new window position corresponds to the tipping point.
+                win_moved_along_x = x_i >= floor(self.interface.playfield.window[0] / 2)
+                win_moved_along_y = y_i >= floor(self.interface.playfield.window[1] / 2)
+                if win_moved_along_x or win_moved_along_y:
+                    # Clear OverlappingSigilAnimations whenever the window shifts so that they can be refreshed.
+                    [self.interface.clear_animation(anim)
+                     for x, y, anim in self.interface.animations
+                     if isinstance(anim, OverlappingSigilAnimation)]
 
     def cmd_wait(self, ticks=10) -> None:
         """Called when a player briefly waits. Runs another 10 (default) ticks."""

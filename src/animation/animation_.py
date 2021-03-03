@@ -45,7 +45,8 @@ class Animation:
     @param frames An iterable of frames, in FIFO order."""
     def __init__(self,
                  frames=Iterable[AnimationFrame],
-                 repeating: bool = False):
+                 repeating: bool = False,
+                 always_on_top: bool = False):
         if not frames:
             raise ValueError("Cannot create an Animation with an empty frames queue!")
 
@@ -55,6 +56,8 @@ class Animation:
 
         # If the animation repeats, it'll need to remember its full frame queue.
         self._full_queue: deque = deque([el for el in frames])
+
+        self.always_on_top = always_on_top
 
     @property
     def _queue_is_empty(self) -> bool:
@@ -82,15 +85,13 @@ class Animation:
         and (if repeating) repopulating the queue if necessary."""
 
         if self.running:
-            if self.repeating and self._queue_is_empty:
-                # Repopulate a repeating animation's queue
-                self._queue = deepcopy(self._full_queue)
-                self._current_frame.decrement()
-
-            elif self._current_frame.has_finished:
-                # Remove a finished animation from the start of the queue
+            if self._current_frame.has_finished:
+                # Remove a finished animation from the start of the queue.
+                # If this Animation repeats, reload the queue from the full queue.
                 self._queue.popleft()
-                self._current_frame.decrement()
+
+                if self._queue_is_empty and self.repeating:
+                    self._queue = deepcopy(self._full_queue)
 
             else:
                 # If nothing else to do, just decrement the current frame.

@@ -21,9 +21,8 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* Implement animations on global tick
 * Menus need to render a cursor on their selected elements
-* Create an Interface class to juggle the playfield and menus and maybe also things rendered at the same level as the playfield
+* Transfer 2D grids to NumPy array format
 
 
 ---

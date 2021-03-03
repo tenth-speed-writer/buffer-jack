@@ -2,9 +2,15 @@ from typing import Optional, Iterable, Tuple, List, Dict
 from src.entity import Entity
 from src.entity.entities import Static, Mobile
 from src.inputs import GameplayHandler
+from src.animation import Animation, AnimationFrame, OverlappingSigilAnimation
 from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
+import numpy as np
+
+# Aliased class for type hinting. It's a class that's not uppercase.
+# But also Numpy is so major we're just not going to question it.
+ArrayLike = np.ndarray
 
 
 class PlayField:
@@ -31,11 +37,6 @@ class PlayField:
             raise ValueError("Width and height must be at least 2 each!")
         self._width = width
         self._height = height
-
-        # Iteratively initiate the PlayField with empty Cells,
-        # populating the _field variable by the row.
-        self._field: List[List[Cell]] = []
-
         self._window_height = window_height
         self._window_width = window_width
         self._window_x0 = window_x0
@@ -43,6 +44,8 @@ class PlayField:
 
         self._animations: List = []
 
+        # Iteratively create the Cell field and cast it to a NumPy array
+        __field = []
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
@@ -52,7 +55,9 @@ class PlayField:
                    for x in range(0, self._width)]
 
             # Then append it to the field.
-            self._field += [row]
+            __field += [row]
+        self._field = np.array(__field,
+                               dtype=Cell)
 
         for x, y, e in contents:
             # Add each provided entity (e) into its specified location
@@ -160,11 +165,6 @@ class PlayField:
         # Flatten the array of positions and request corresponding Cell instances
         flat_window_positions = sum(window_positions, [])
         cells: List[Cell] = self.get_cells(cells=flat_window_positions)
-        # a = min([c.position[0] for c in cells])
-        # b = max([c.position[0] for c in cells])
-        # c = min([c.position[1] for c in cells])
-        # d = max([c.position[1] for c in cells])
-        # print ("x:{} - {},   y:{} - {}".format(str(a), str(b), str(c), str(d)))
 
         drawables = [{"x": c.position[0] - window_x0 + 1,
                       "y": c.position[1] - window_y0 + 1,
@@ -240,6 +240,7 @@ class PlayField:
     def origin(self, new_origin: Tuple[int, int]):
         """Assigns a new tuple(x, y) as the top left console cell from which to render this playfield."""
         x0, y0 = new_origin
+
         if x0 >= 0 and y0 >= 0:
             self._window_x0 = x0
             self._window_y0 = y0
@@ -267,3 +268,35 @@ class PlayField:
     @property
     def interface(self):
         return self._interface
+
+    def draw_overlap_animations(self, center_on: Tuple[int, int]):
+        """Tell the interface to make an animation for each cell with more than one top sigil."""
+        win_h, win_w = self.window
+        center_x, center_y = center_on
+
+        window_x0 = max(floor(center_x - 0.5 * self.window[0]), 0)
+        window_y0 = max(floor(center_y - 0.5 * self.window[1]), 0)
+
+        # Gather a 2D list of visible (x, y) pairs and then flatten it
+        visible_positions = sum([[(x, y)
+                                  for x in range(window_x0, win_w)]
+                                 for y in range(window_y0, win_h)],
+                                [])
+
+        # Gather a list of cells in those positions which have more than one top-priority sigil
+        cells = [c for c in self.get_cells(cells=visible_positions)
+                 if len(c.sigils) > 1]
+        for c in cells:
+            frames_per_item = 10
+            frames = [AnimationFrame(sig, frames_per_item)
+                      for sig in c.sigils]
+            anim = OverlappingSigilAnimation(frames, repeating=True)
+
+            # Add the animation at the cell's position, subtracting the window adjustment from each dimension.
+            cell_x, cell_y = c.position
+            anim_positions = [(x, y) for x, y, anim in self.interface.animations]
+
+            anim_x, anim_y = cell_x - window_x0, cell_y - window_y0
+
+            if not ((anim_x, anim_y) in anim_positions):
+                self.interface.add_animation(anim_x, anim_y, anim)

@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 from src.entity import Entity
 from src.sigil import Sigil
-
+from src.animation import OverlappingSigilAnimation
 
 class Static(Entity):
     """Static vs Mobile determines whether an Entity has the logic to move under its own prerogative.
@@ -54,6 +54,15 @@ class Mobile(Entity):
         Override as necessary, but be sure to decrement the action cooldown. :)"""
         if self._action_cooldown > 0:
             self._action_cooldown -= 1
+
+    def move_to(self, x, y):
+        """Check if this is the player character. If so, reset overlapping sigil animations on move."""
+        if self.playfield.player_character is self:
+            interface = self.playfield.interface
+            [interface.clear_animation(anim)
+             for anim in interface.animations
+             if isinstance(anim, OverlappingSigilAnimation)]
+        super().move_to(x, y)
 
 
 # class ToyBoi(Mobile):
