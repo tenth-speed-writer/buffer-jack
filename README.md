@@ -21,8 +21,8 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* Implement animations on global tick
 * Menus need to render a cursor on their selected elements
+* Transfer 2D grids to NumPy array format
 
 
 ---

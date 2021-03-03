@@ -31,7 +31,7 @@ def main():
     interface = Interface(context)
 
     # Mock-up of generating the main menu, which should be its own class, I think
-    menu = Menu(width=floor(WIDTH/TILESET_SIZE),
+    menu = Menu(width=floor(WIDTH/(2*TILESET_SIZE)),
                 height=floor(HEIGHT/TILESET_SIZE),
                 interface=interface,
                 spacing=1)
@@ -230,4 +230,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    import numpy as np
+    foo = [["a", "b"], ["c", "d"]]
+    bar = np.array(foo, dtype=str)
+    print(bar[0][1])
