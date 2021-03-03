@@ -228,10 +228,5 @@ def main():
 #         # Draw each menu on top of one another for each menu in a menus variable,
 #         # then pass control of the handler to that menu's handler
 
-
 if __name__ == "__main__":
-    # main()
-    import numpy as np
-    foo = [["a", "b"], ["c", "d"]]
-    bar = np.array(foo, dtype=str)
-    print(bar[0][1])
+    main()

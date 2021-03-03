@@ -6,6 +6,11 @@ from src.animation import Animation, AnimationFrame, OverlappingSigilAnimation
 from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
+import numpy as np
+
+# Aliased class for type hinting. It's a class that's not uppercase.
+# But also Numpy is so major we're just not going to question it.
+ArrayLike = np.ndarray
 
 
 class PlayField:
@@ -32,11 +37,6 @@ class PlayField:
             raise ValueError("Width and height must be at least 2 each!")
         self._width = width
         self._height = height
-
-        # Iteratively initiate the PlayField with empty Cells,
-        # populating the _field variable by the row.
-        self._field: List[List[Cell]] = []
-
         self._window_height = window_height
         self._window_width = window_width
         self._window_x0 = window_x0
@@ -44,6 +44,8 @@ class PlayField:
 
         self._animations: List = []
 
+        # Iteratively create the Cell field and cast it to a NumPy array
+        __field = []
         for y in range(0, self._height):
             # Create a row which includes one cell, in order,
             # for every tile between 0 and the opposite map edge.
@@ -53,7 +55,9 @@ class PlayField:
                    for x in range(0, self._width)]
 
             # Then append it to the field.
-            self._field += [row]
+            __field += [row]
+        self._field = np.array(__field,
+                               dtype=Cell)
 
         for x, y, e in contents:
             # Add each provided entity (e) into its specified location
@@ -161,11 +165,6 @@ class PlayField:
         # Flatten the array of positions and request corresponding Cell instances
         flat_window_positions = sum(window_positions, [])
         cells: List[Cell] = self.get_cells(cells=flat_window_positions)
-        # a = min([c.position[0] for c in cells])
-        # b = max([c.position[0] for c in cells])
-        # c = min([c.position[1] for c in cells])
-        # d = max([c.position[1] for c in cells])
-        # print ("x:{} - {},   y:{} - {}".format(str(a), str(b), str(c), str(d)))
 
         drawables = [{"x": c.position[0] - window_x0 + 1,
                       "y": c.position[1] - window_y0 + 1,
