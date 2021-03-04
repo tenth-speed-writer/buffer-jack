@@ -23,6 +23,5 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 Agenda:
 * Find any list-of-lists used in rendering and replace with NumPy arrays
 * Fix animation rendering position bug
-* Add default behavior to menus: render from _selected - 1 if the current option isn't the first one in the menu
 * Implement and debug game log
 ---

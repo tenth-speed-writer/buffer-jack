@@ -265,17 +265,27 @@ class MenuInputHandler(tcod.event.EventDispatch):
             skip_delta = 10
 
             # Add a stop at the 0th MenuOption if skipping up
-            if self._menu.selected - skip_delta < 0:
-                skip_delta = skip_delta - self._menu.selected
+            if self._menu.selected - skip_delta < 0 and self._menu.selected != 0:
+                skip_delta = self._menu.selected
 
-            self._menu.change_selection(PositionDelta(dx=0, dy=skip_delta))
+            self._menu.change_selection(PositionDelta(dx=0, dy=-skip_delta))
 
         elif event.sym in skip_down_keys:
             skip_delta = 10
 
             # Add a stop at the last MenuOption if skipping down
-            if self._menu.selected + skip_delta >= len(self._menu.contents):
-                skip_delta = len(self._menu.contents) - self._menu.selected
+            would_pass_end = self._menu.selected + skip_delta >= len(self._menu.contents)
+            at_end = self._menu.selected == len(self._menu.contents) - 1
+            if would_pass_end and not at_end:
+                # If we would skip past the end, but aren't already at it, then skip to it.
+                skip_delta = len(self._menu.contents) - self._menu.selected - 1
+                print("At: {}. Last index is at {}. skip_delta: {}".format(str(self._menu.selected),
+                                                                           str(len(self._menu.contents) - 1),
+                                                                           str(skip_delta)))
+            elif at_end:
+                # If we're at the end, just skip to 0.
+                skip_delta = 1
+                print("skipped at end")
 
             self._menu.change_selection(PositionDelta(dx=0, dy=skip_delta))
 
