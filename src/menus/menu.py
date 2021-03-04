@@ -394,11 +394,16 @@ class Menu:
         """Add a menu option to the end of this menu's list of contents."""
         self._contents = [] + self._contents + [opt]
 
+        # If this is the first or only element in the menu contents,
+        # then be sure to fire its on_gets_cursor method.
+        # DEVNOTE: This might be a bug source if we have a MenuOption which needs the menu to be open.
+        if len(self._contents) == 1:
+            self._contents[0].on_gets_cursor()
+
     def remove_option(self, opt: MenuOption):
         if opt in self._contents:
             self._contents.remove(opt)
 
-    # TODO: Replace this behavior with one which respects ._menus as a protected member
     def open_menu(self) -> None:
         """Set this menu as the last element of the interface menus list"""
         self.interface.add_menu(self)
