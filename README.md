@@ -21,9 +21,9 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* Make sure menus initialize with a selection
 * Fix the weird right-align bug on menu options after the first
 * Find any list-of-lists used in rendering and replace with NumPy arrays
 * Fix animation rendering position bug
+* Fix 'list index out of range' when scrolling up past the top of Menus
 
 ---
