@@ -117,7 +117,7 @@ class GameLog:
 
         # While yi is between our origin point and origin + height,
         # and while we ALSO have more LogEntries left to render...
-        while yi <= y0 + self._height and -i < len(self._log):
+        while yi <= y0 + self._height and -i <= len(self._log):
             # Render it on column dx and row yi, then append it to drawables.
             entry = self._log[i]
             drawables += entry.as_drawables(x0=x0,

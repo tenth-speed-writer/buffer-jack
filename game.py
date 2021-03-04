@@ -71,7 +71,12 @@ def main():
         blue_floor.introduce_at(12, 12, interface.playfield)
 
         # print(interface.playfield.get_cell(12, 12).sigils)
-
+        interface.new_game_log(height=10, width=40)
+        interface.print_to_log("This is a log test!", color=(25, 250, 25))
+        interface.print_to_log("This is an exceptionally long log test so we can see how well it handles multiples of these.")
+        interface.print_to_log("This is another line.")
+        interface.print_to_log("This is yet another line.")
+        interface.print_to_log("This should bump the first line off of the screen.")
         menu.close_menu()
 
     menu.add_option(MenuOption(text="Start Game",

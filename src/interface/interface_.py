@@ -147,7 +147,7 @@ class Interface:
             self._print_menus()
 
         if self._game_log:
-            self._print_game_log(x0=1, y0=self.playfield.height + 1)
+            self._print_game_log(x0=1, y0=self.playfield.window[1] + 1)
 
         # Draw animations that ARE always_on_top, if there are any.
         [self.console.print(x=x,
@@ -198,13 +198,14 @@ class Interface:
         for event in tcod.event.get():
             dispatcher.dispatch(event)
 
-    def new_game_log(self, entries: List[LogEntry] = []):
+    def new_game_log(self,
+                     width: int,
+                     height: int,
+                     entries: List[LogEntry] = []):
         """Returns a new game log with specified entries, sized to fit along the lower edge
         of the screen and as high as free space beneath the playfield allows."""
-        free_height = self.console.height - self.playfield.window[1]
-
-        self._game_log = GameLog(width=self.console.width,
-                                 height=free_height,
+        self._game_log = GameLog(width=width,
+                                 height=height,
                                  interface=self)
 
         for e in entries:
