@@ -568,7 +568,7 @@ class Menu:
         if num_opts >= len(self.contents):                   # If no more contents than places to put them
             opts = self.contents                             # Just render them all
         else:                                                # Otherwise
-            opts = self.contents[self._selected + num_opts]  # Render as many as we can
+            opts = self.contents[self._selected:self._selected + num_opts]  # Render as many as we can
 
         drawables: List[Tuple[int, int, Sigil]] = []
         for i in range(0, len(opts)):
