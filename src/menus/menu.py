@@ -529,6 +529,7 @@ class Menu:
             :param opt_rows: A batch of rows (usually given by a MenuObject) to be drawn
             :return: A list of (x, y, Sigil) tuples, where x and y are true console positions.
             """
+            print("x_0: {}, y_0: {}".format(str(x_0), str(y_0)))
             drawables_ = []
             for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
                 for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
@@ -540,14 +541,6 @@ class Menu:
                                             color=color)))
             return drawables_
 
-        # Disregard drawing menu borders here.
-        # If we want one, we can make the console draw it elsewhere.
-        #
-        # if self._has_border:
-        #     console.draw_frame(x0, y0, self._width, self._height)
-        #     h = self._height - 2  # Effective width and height after drawing the border
-        #     w = self._width - 2
-        # else:
         h = self._height
         w = self._width
 
@@ -561,7 +554,7 @@ class Menu:
         # TODO: Make .width/.height getters or find a more graceful way of doing this.
 
         # Determine the x position of the menu options and the first y position
-        opt_x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
+        opt_x0 = self.pad_left + floor(0.5 * (w - self.contents[0].size[0])) - 1
         opt_y0 = self.pad_top
         locations = [(opt_x0, opt_y0)]  # Valid top left corner tiles for drawing MenuItems
 
@@ -581,7 +574,7 @@ class Menu:
         for i in range(0, len(opts)):
             rows = opts[i].rows
             pos = locations[i]
-            drawables += rows_to_drawables(x_0=x0 + pos[0], y_0=y0 + pos[1], opt_rows=rows)
+            drawables += rows_to_drawables(x_0=x0, y_0=y0 + pos[1], opt_rows=rows)
 
         return drawables
 
