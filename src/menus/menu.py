@@ -268,6 +268,9 @@ class MenuInputHandler(tcod.event.EventDispatch):
             if self._menu.selected - skip_delta < 0 and self._menu.selected != 0:
                 skip_delta = self._menu.selected
 
+            elif self._menu.selected == 0:
+                skip_delta = 1
+
             self._menu.change_selection(PositionDelta(dx=0, dy=-skip_delta))
 
         elif event.sym in skip_down_keys:
