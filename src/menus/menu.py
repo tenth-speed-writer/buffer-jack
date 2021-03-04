@@ -241,11 +241,13 @@ class MenuInputHandler(tcod.event.EventDispatch):
 
     def cmd_close_menu(self):
         """Set its .is_open to False, breaking the menu loop."""
-        self._menu.close()
+        self._menu.close_menu()
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         up_keys = [tcod.event.K_UP, tcod.event.K_KP_8, tcod.event.K_KP_PLUS]
         down_keys = [tcod.event.K_DOWN, tcod.event.K_KP_2, tcod.event.K_KP_MINUS]
+        skip_up_keys = [tcod.event.K_PAGEUP]
+        skip_down_keys = [tcod.event.K_PAGEDOWN]
         select_keys = [tcod.event.K_SPACE,
                        tcod.event.K_RETURN,
                        tcod.event.K_RETURN2,
@@ -255,13 +257,33 @@ class MenuInputHandler(tcod.event.EventDispatch):
         # TODO: Add page up/page down for multi-entity skips
         if event.sym in up_keys:
             self._menu.change_selection(PositionDelta(dx=0, dy=-1))
+
         elif event.sym in down_keys:
             self._menu.change_selection(PositionDelta(dx=0, dy=1))
+
+        elif event.sym in skip_up_keys:
+            skip_delta = 10
+
+            # Add a stop at the 0th MenuOption if skipping up
+            if self._menu.selected - skip_delta < 0:
+                skip_delta = skip_delta - self._menu.selected
+
+            self._menu.change_selection(PositionDelta(dx=0, dy=skip_delta))
+
+        elif event.sym in skip_down_keys:
+            skip_delta = 10
+
+            # Add a stop at the last MenuOption if skipping down
+            if self._menu.selected + skip_delta >= len(self._menu.contents):
+                skip_delta = len(self._menu.contents) - self._menu.selected
+
+            self._menu.change_selection(PositionDelta(dx=0, dy=skip_delta))
+
         elif event.sym in select_keys:
             opt: MenuOption = self._menu.contents[self._menu.selected]
             opt.on_select(None)
+
         elif event.sym in exit_keys:
-            # TODO: Tell the menu to close
             self.cmd_close_menu()
 
     def ev_quit(self, event: tcod.event.Quit):
@@ -574,8 +596,12 @@ class Menu:
         num_opts = len(locations)
         if num_opts >= len(self.contents):                   # If no more contents than places to put them
             opts = self.contents                             # Just render them all
-        else:                                                # Otherwise
-            opts = self.contents[self._selected:self._selected + num_opts]  # Render as many as we can
+        else:                                                # Otherwise, render as many as we can
+            # If the option selected isn't the first in the list, render from one step back going downward
+            if self._selected == 0:
+                opts = self.contents[self._selected:self._selected + num_opts]
+            else:
+                opts = self.contents[self._selected - 1:self._selected + num_opts - 1]
 
         drawables: List[Tuple[int, int, Sigil]] = []
         for i in range(0, len(opts)):
