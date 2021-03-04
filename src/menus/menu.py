@@ -223,6 +223,16 @@ class MenuOption:
     def subtext(self, st: str):
         self._subtext = st
 
+    def on_gets_cursor(self):
+        """Run when the player highlights this menu option.
+        By default, turns the selection .color green. Override to add more interesting logic."""
+        self.color = (25, 230, 25)
+
+    def on_loses_cursor(self):
+        """Run when the player moves from highlighting this menu option to highlighting another.
+        By default, turns the selection .color white. Override to add more interesting logic."""
+        self.color = (255, 255, 255)
+
 
 class MenuInputHandler(tcod.event.EventDispatch):
     def __init__(self, menu):
@@ -484,7 +494,9 @@ class Menu:
         while y1 > y_max:
             y1 -= num_options
 
+        self._contents[self._selected].on_loses_cursor()
         self._selected = y1
+        self._contents[self._selected].on_gets_cursor()
 
     @property
     def dispatch(self) -> tcod.event.EventDispatch:
