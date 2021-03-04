@@ -83,6 +83,33 @@ def main():
     menu.add_option(MenuOption(text="Do Nothing Else",
                                width=24, height=5,
                                on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Do More Nothing",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Make this menu long",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Like REALLY long",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Because we, ah...",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Need to test something",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="You know, uh...",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="that one thing...",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Oh yeah!",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
+    menu.add_option(MenuOption(text="Overflow behavior! :)",
+                               width=24, height=5,
+                               on_select=lambda x: print("Did more nothing!")))
     interface.open_menu(menu)
 
     last_tick = __time_ms()  # In epoch milliseconds

@@ -496,8 +496,16 @@ class Menu:
         y1 = y0+dy
 
         # If y1 is past the end of the list indices, loop back.
-        while y1 > y_max:
-            y1 -= num_options
+        if y1 >= 0:
+            while y1 > y_max:
+                y1 -= num_options
+
+        # In the case y1 is a negative index, loop back until it's smaller than
+        if y1 < 0:
+            y1_neg = -y1
+            while y1_neg > y_max:
+                y1_neg -= num_options
+            y1 = num_options - y1_neg
 
         self._contents[self._selected].on_loses_cursor()
         self._selected = y1
@@ -529,7 +537,6 @@ class Menu:
             :param opt_rows: A batch of rows (usually given by a MenuObject) to be drawn
             :return: A list of (x, y, Sigil) tuples, where x and y are true console positions.
             """
-            print("x_0: {}, y_0: {}".format(str(x_0), str(y_0)))
             drawables_ = []
             for dy in range(0, len(opt_rows)):  # dy is both change from y0 and our row iterator
                 for dx in range(0, len(opt_rows[dy])):  # same for dx, x0, and our our column iterator
