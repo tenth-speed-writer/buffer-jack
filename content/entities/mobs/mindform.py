@@ -106,15 +106,16 @@ class MindForm(Mobile):
 
     def max_stress(self,
                    baseline: float = 25,
-                   recog_weight: float = 0.4,
-                   resol_weight: float = 0.3,
+                   recog_weight: float = 0.2,
+                   resol_weight: float = 0.5,
                    decon_weight: float = 0.2,
                    atten_weight: float = 0.1,
                    empth_weight: float = -0.1) -> float:
         """Calculates and returns the critical stress at which the MindForm loses cohesion.
         For the player this means a traumatic jack-out and for other things it means...
 
-        All stats affect max stress to varying degrees. High empathy actually hurts it."""
+        All stats affect max stress to varying degrees.
+        High resolution makes the most difference; high empathy actually hurts it."""
         return sum((recog_weight * self.recognizance,
                     resol_weight * self.resolution,
                     decon_weight * self.deconstruction,
