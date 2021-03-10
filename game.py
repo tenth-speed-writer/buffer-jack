@@ -8,10 +8,16 @@ from src.sigil import Sigil
 from math import floor
 from time import time_ns
 
-# Default window resolution
-WIDTH, HEIGHT = 720, 480
+# TODO: Move these to a config file
+WIDTH, HEIGHT = 1080, 768
 TILESET_SIZE = 16
-FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
+GAMELOG_HEIGHT = 12
+READOUT_WIDTH = 24
+#MIN_ROWS, MIN_COLUMNS = 55, 75
+
+
+#FLAGS = tcod.context.SDL_WINDOW_RESIZABLE | tcod.context.SDL_WINDOW_MAXIMIZED
+FLAGS = tcod.context.SDL_WINDOW_FULLSCREEN_DESKTOP
 
 
 def __time_ms():
@@ -127,52 +133,13 @@ def main():
             if interface.playfield:
                 win_width, win_height = context.recommended_console_size(min_columns=50,
                                                                          min_rows=40)
-                interface.playfield.window = (win_width - 20, win_height - 12)
+                interface.playfield.window = (win_width - READOUT_WIDTH,
+                                              win_height - GAMELOG_HEIGHT)
             interface.tick()
             interface.print_self()
 
             # Forward the reference time to the time at which we started this batch of logic
             last_tick = now_ms
-
-# def main():
-#     # Load the tileset and context
-#     tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
-#                                           charmap=tcod.tileset.CHARMAP_CP437)
-#     context = tcod.context.new(width=WIDTH,
-#                                height=HEIGHT,
-#                                tileset=tileset,
-#                                sdl_window_flags=FLAGS)
-#
-#     player_char = Mobile(size=4,
-#                          sigil=Sigil("@", priority=3),
-#                          name="Player Character")
-#     #playfield = PlayField(width=)
-#
-#     # Create an interface
-#     interface = Interface(context=context)
-#
-#     GameLog(45, 12,
-#             initial_log=[LogEntry("This is a small log entry"),
-#                          LogEntry("This is an obtusely long log entry used in order to try to exceed the maximum line length and thus test word wrapping in the game log.")])
-#     menu = Menu(30, 50, menus=interface._menus)
-#
-#     def _start_the_game(dummy_var):
-#         from src.entity.entities import Wall
-#         interface.new_playfield(width=60, height=40,
-#                                 player_character=player_char,
-#                                 player_spawn=(10, 10),
-#                                 contents=[(x, 1, Wall())
-#                                           for x in range(4, 9)])
-#         interface.close_menu(menu)
-#
-#     menu.add_option(MenuOption("Launch game", width=20, height=3,
-#                                on_select=lambda x: _start_the_game(x)))
-#     interface.open_menu(menu)
-#
-#     while True:
-#         interface.tick()
-#         interface.print_self()
-
 
 if __name__ == "__main__":
     main()
