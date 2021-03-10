@@ -57,41 +57,46 @@ class MindForm(Mobile):
         return self._attention
 
     @property
-    def resolution(self):
+    def resolution(self) -> int:
         """Getter for MindForm.resolution. Override to add modifier logic."""
         return self._resolution
 
     @property
-    def empathy(self):
+    def empathy(self) -> int:
         """Getter for MindForm.empathy. Override to add modifier logic."""
         return self._empathy
 
     @recognizance.setter
     def recognizance(self, new_recog: int) -> None:
+        """Setter for MindForm.recognizance. Override to add on-change logic."""
         if not (0 <= new_recog <= 100):
             raise ValueError("Argument 'new_recog' must be between 0 and 100 inclusive.")
         self._recognizance = new_recog
 
     @deconstruction.setter
     def deconstruction(self, new_decon: int) -> None:
+        """Setter for MindForm.deconstruction. Override to add on-change logic."""
         if not (0 <= new_decon <= 100):
             raise ValueError("Argument 'new_decon' must be between 0 and 100 inclusive.")
         self._deconstruction = new_decon
 
     @attention.setter
     def attention(self, new_atten: int) -> None:
+        """Setter for MindForm.attention. Override to add on-change logic."""
         if not (0 <= new_atten <= 100):
             raise ValueError("Argument 'new_atten' must be between 0 and 100 inclusive.")
         self._attention = new_atten
 
     @resolution.setter
     def resolution(self, new_resol: int) -> None:
+        """Setter for MindForm.resolution. Override to add on-change logic."""
         if not (0 <= new_resol <= 100):
             raise ValueError("Argument 'new_resol' must be between 0 and 100 inclusive.")
         self._resolution = new_resol
 
     @empathy.setter
     def empathy(self, new_empth: int) -> None:
+        """Setter for MindForm.empathy. Override to add on-change logic."""
         if not (0 <= new_empth <= 100):
             raise ValueError("Argument 'new_empth' must be between 0 and 100 inclusive.")
         self._empathy = new_empth
