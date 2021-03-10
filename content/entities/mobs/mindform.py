@@ -4,6 +4,7 @@ from src.entity.entities import Mobile
 
 class MindForm(Mobile):
     """A coherent, sapient entity. The buffer jack, or someone that's eluded them."""
+
     def __init__(self, name: str, size: int,
                  sigil: Sigil, base_move_cost: int,
                  recognizance: int,
@@ -40,6 +41,8 @@ class MindForm(Mobile):
         self._attention = attention
         self._resolution = resolution
         self._empathy = empathy
+
+        self._stress = 0
 
     @property
     def recognizance(self) -> int:
@@ -100,3 +103,55 @@ class MindForm(Mobile):
         if not (0 <= new_empth <= 100):
             raise ValueError("Argument 'new_empth' must be between 0 and 100 inclusive.")
         self._empathy = new_empth
+
+    def max_stress(self,
+                   baseline: float = 25,
+                   recog_weight: float = 0.4,
+                   resol_weight: float = 0.3,
+                   decon_weight: float = 0.2,
+                   atten_weight: float = 0.1,
+                   empth_weight: float = -0.1) -> float:
+        """Calculates and returns the critical stress at which the MindForm loses cohesion.
+        For the player this means a traumatic jack-out and for other things it means...
+
+        All stats affect max stress to varying degrees. High empathy actually hurts it."""
+        return sum((recog_weight * self.recognizance,
+                    resol_weight * self.resolution,
+                    decon_weight * self.deconstruction,
+                    atten_weight * self.attention,
+                    empth_weight * self.empathy)) + baseline
+
+    @property
+    def stress(self):
+        return self._stress
+
+    @stress.setter
+    def stress(self, new_stress):
+        """Sets the stress of this creature to a specified value. Use for mechanical reasons;
+        for gameplay, .stress_delta() is preferred as it calls """
+        self._stress = new_stress
+
+    def on_critical_stress(self):
+        """By default, remove this MindForm from the playfield and print to the gamelog about it.
+        Override and call in order to add what more-or-less amounts to on-death logic."""
+        self.playfield.interface.print_to_log("{} loses cohesion due to extreme duress!"
+                                              .format(self.name))
+        self.destroy()
+
+    def stress_delta(self, change_in_stress: float):
+        """Changes this MindForm's stress by some quantity, flooring it at 0
+        and capping it + calling on_critical_stress at self.max_stress().
+
+        Override and call to add behavior on stress change."""
+
+        max_stress = self.max_stress()
+
+        if self.stress + change_in_stress < 0:
+            self.stress = float(0)
+
+        elif self.stress + change_in_stress >= max_stress:
+            self.stress = self.max_stress()
+            self.on_critical_stress()
+
+        else:
+            self.stress += change_in_stress
