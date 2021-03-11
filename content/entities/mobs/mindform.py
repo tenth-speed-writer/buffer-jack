@@ -172,7 +172,7 @@ class MindForm(Mobile):
     @stress.setter
     def stress(self, new_stress):
         """Sets the stress of this creature to a specified value. Use for mechanical reasons;
-        for gameplay, .stress_delta() is preferred as it calls """
+        for gameplay, .stress_delta() is preferred as it calls on_critical_stress."""
         self._stress = new_stress
 
     def on_critical_stress(self):
