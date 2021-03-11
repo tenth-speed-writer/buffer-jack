@@ -57,7 +57,7 @@ class MindForm(Mobile):
         mults = [m for m in modifiers
                  if isinstance(m, MultiplicativeModifier) or issubclass(m.__class__, MultiplicativeModifier)]
 
-        result: float = float(self._recognizance)
+        result: float = getattr(self, name="_" + stat)
 
         # Apply multiplicative before additive
         for mod in mults:
