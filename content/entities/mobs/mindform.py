@@ -8,11 +8,11 @@ class MindForm(Mobile):
     """A coherent, sapient entity. The buffer jack, or someone that's eluded them."""
     def __init__(self, name: str, size: int,
                  sigil: Sigil, base_move_cost: int,
-                 recognizance: int,
-                 deconstruction: int,
-                 attention: int,
-                 resolution: int,
-                 empathy: int):
+                 recognizance: float,
+                 deconstruction: float,
+                 attention: float,
+                 resolution: float,
+                 empathy: float):
 
         def __check_args():
             """Wraps up the argument tests for MindForm generation."""
@@ -68,7 +68,7 @@ class MindForm(Mobile):
         return result
 
     @property
-    def base_recognizance(self) -> int:
+    def base_recognizance(self) -> float:
         """Getter for MindForm.recognizance. Override to add modifier logic."""
         return self._recognizance
 
@@ -77,7 +77,7 @@ class MindForm(Mobile):
         return self._apply_modifiers_to("recognizance")
 
     @property
-    def base_deconstruction(self) -> int:
+    def base_deconstruction(self) -> float:
         """Getter for MindForm.deconstruction. Override to add modifier logic."""
         return self._deconstruction
 
@@ -86,7 +86,7 @@ class MindForm(Mobile):
         return self._apply_modifiers_to("recognizance")
 
     @property
-    def base_attention(self) -> int:
+    def base_attention(self) -> float:
         """Getter for MindForm.attention. Override to add modifier logic."""
         return self._attention
 
@@ -95,7 +95,7 @@ class MindForm(Mobile):
         return self._apply_modifiers_to("attention")
 
     @property
-    def base_resolution(self) -> int:
+    def base_resolution(self) -> float:
         """Getter for MindForm.resolution. Override to add modifier logic."""
         return self._resolution
 
@@ -104,7 +104,7 @@ class MindForm(Mobile):
         return self._apply_modifiers_to("resolution")
 
     @property
-    def base_empathy(self) -> int:
+    def base_empathy(self) -> float:
         """Getter for MindForm.empathy. Override to add modifier logic."""
         return self._empathy
 
@@ -113,35 +113,35 @@ class MindForm(Mobile):
         return self._apply_modifiers_to("empathy")
 
     @recognizance.setter
-    def recognizance(self, new_recog: int) -> None:
+    def recognizance(self, new_recog: float) -> None:
         """Setter for MindForm.recognizance. Override to add on-change logic."""
         if not (0 <= new_recog <= 100):
             raise ValueError("Argument 'new_recog' must be between 0 and 100 inclusive.")
         self._recognizance = new_recog
 
     @deconstruction.setter
-    def deconstruction(self, new_decon: int) -> None:
+    def deconstruction(self, new_decon: float) -> None:
         """Setter for MindForm.deconstruction. Override to add on-change logic."""
         if not (0 <= new_decon <= 100):
             raise ValueError("Argument 'new_decon' must be between 0 and 100 inclusive.")
         self._deconstruction = new_decon
 
     @attention.setter
-    def attention(self, new_atten: int) -> None:
+    def attention(self, new_atten: float) -> None:
         """Setter for MindForm.attention. Override to add on-change logic."""
         if not (0 <= new_atten <= 100):
             raise ValueError("Argument 'new_atten' must be between 0 and 100 inclusive.")
         self._attention = new_atten
 
     @resolution.setter
-    def resolution(self, new_resol: int) -> None:
+    def resolution(self, new_resol: float) -> None:
         """Setter for MindForm.resolution. Override to add on-change logic."""
         if not (0 <= new_resol <= 100):
             raise ValueError("Argument 'new_resol' must be between 0 and 100 inclusive.")
         self._resolution = new_resol
 
     @empathy.setter
-    def empathy(self, new_empth: int) -> None:
+    def empathy(self, new_empth: float) -> None:
         """Setter for MindForm.empathy. Override to add on-change logic."""
         if not (0 <= new_empth <= 100):
             raise ValueError("Argument 'new_empth' must be between 0 and 100 inclusive.")
