@@ -1,10 +1,11 @@
 from src.sigil import Sigil
 from src.entity.entities import Mobile
+from src.modifiers import Modifier, MultiplicativeModifier, AdditiveModifier
+from typing import List, Dict
 
 
 class MindForm(Mobile):
     """A coherent, sapient entity. The buffer jack, or someone that's eluded them."""
-
     def __init__(self, name: str, size: int,
                  sigil: Sigil, base_move_cost: int,
                  recognizance: int,
@@ -43,31 +44,73 @@ class MindForm(Mobile):
         self._empathy = empathy
 
         self._stress = 0
+        self.modifiers = {}
+
+    def _apply_modifiers_to(self, stat: str):
+        if not hasattr(self, stat):
+            raise ValueError("Entity does not have a stat called '{}'!".format(stat))
+
+        modifiers: List[Modifier] = self.modifiers[stat] if stat in self.modifiers.keys() else []
+
+        adds = [m for m in modifiers
+                if isinstance(m, AdditiveModifier) or issubclass(m.__class__, AdditiveModifier)]
+        mults = [m for m in modifiers
+                 if isinstance(m, MultiplicativeModifier) or issubclass(m.__class__, MultiplicativeModifier)]
+
+        result: float = float(self._recognizance)
+
+        # Apply multiplicative before additive
+        for mod in mults:
+            result = mod.calculate(result)
+        for mod in adds:
+            result = mod.calculate(result)
+
+        return result
 
     @property
-    def recognizance(self) -> int:
+    def base_recognizance(self) -> int:
         """Getter for MindForm.recognizance. Override to add modifier logic."""
         return self._recognizance
 
     @property
-    def deconstruction(self) -> int:
+    def recognizance(self):
+        return self._apply_modifiers_to("recognizance")
+
+    @property
+    def base_deconstruction(self) -> int:
         """Getter for MindForm.deconstruction. Override to add modifier logic."""
         return self._deconstruction
 
     @property
-    def attention(self) -> int:
+    def deconstruction(self) -> float:
+        return self._apply_modifiers_to("recognizance")
+
+    @property
+    def base_attention(self) -> int:
         """Getter for MindForm.attention. Override to add modifier logic."""
         return self._attention
 
     @property
-    def resolution(self) -> int:
+    def attention(self) -> float:
+        return self._apply_modifiers_to("attention")
+
+    @property
+    def base_resolution(self) -> int:
         """Getter for MindForm.resolution. Override to add modifier logic."""
         return self._resolution
 
     @property
-    def empathy(self) -> int:
+    def resolution(self) -> float:
+        return self._apply_modifiers_to("resolution")
+
+    @property
+    def base_empathy(self) -> int:
         """Getter for MindForm.empathy. Override to add modifier logic."""
         return self._empathy
+
+    @property
+    def empathy(self) -> float:
+        return self._apply_modifiers_to("empathy")
 
     @recognizance.setter
     def recognizance(self, new_recog: int) -> None:
