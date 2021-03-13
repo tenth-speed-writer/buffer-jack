@@ -1,10 +1,8 @@
 from src.sigil import Sigil
-from src.entity.entities import Mobile
-from src.modifiers import Modifier, MultiplicativeModifier, AdditiveModifier
-from typing import List
+from .fooform import FooForm
 
 
-class MindForm(Mobile):
+class MindForm(FooForm):
     """A coherent, sapient entity. The buffer jack, or someone that's eluded them."""
     def __init__(self, name: str, size: int,
                  sigil: Sigil, base_move_cost: int,
@@ -44,37 +42,10 @@ class MindForm(Mobile):
         self._empathy = empathy
 
         self._stress = 0
-        self.modifiers = {
-            "recognizance": [],
-            "deconstruction": [],
-            "attention": [],
-            "resolution": [],
-            "empathy": []
-        }
 
-    def _apply_modifiers_to(self, stat: str):
-        if not hasattr(self, stat):
-            raise ValueError("Entity does not have a stat called '{}'!".format(stat))
-
-        if not stat in self.modifiers.keys():
-            raise ValueError("Entity's .modifiers dict has no value for key {}!".format(str(stat)))
-
-        modifiers: List[Modifier] = self.modifiers[stat] if stat in self.modifiers.keys() else []
-
-        adds = [m for m in modifiers
-                if isinstance(m, AdditiveModifier) or issubclass(m.__class__, AdditiveModifier)]
-        mults = [m for m in modifiers
-                 if isinstance(m, MultiplicativeModifier) or issubclass(m.__class__, MultiplicativeModifier)]
-
-        result: float = getattr(self, name="_" + stat)
-
-        # Apply multiplicative before additive
-        for mod in mults:
-            result = mod.calculate(result)
-        for mod in adds:
-            result = mod.calculate(result)
-
-        return result
+        # Initialize empty lists in the .modifiers dict for each assigned stat
+        for stat in ("recognizance", "deconstruction", "attention", "resolution", "empathy"):
+            self.modifiers[stat] = {}
 
     @property
     def base_recognizance(self) -> float:
@@ -94,6 +65,10 @@ class MindForm(Mobile):
     def deconstruction(self) -> float:
         return self._apply_modifiers_to("recognizance")
 
+    @deconstruction.setter
+    def deconstruction(self, new_decon: float) -> None:
+        self._set_base_stat("deconstruction", new_decon)
+
     @property
     def base_attention(self) -> float:
         """Getter for MindForm.attention. Override to add modifier logic."""
@@ -102,6 +77,10 @@ class MindForm(Mobile):
     @property
     def attention(self) -> float:
         return self._apply_modifiers_to("attention")
+
+    @attention.setter
+    def attention(self, new_atten: float) -> None:
+        self._set_base_stat("attention", new_atten)
 
     @property
     def base_resolution(self) -> float:
@@ -112,6 +91,10 @@ class MindForm(Mobile):
     def resolution(self) -> float:
         return self._apply_modifiers_to("resolution")
 
+    @resolution.setter
+    def resolution(self, new_resol: float) -> None:
+        self._set_base_stat("resolution", new_resol)
+
     @property
     def base_empathy(self) -> float:
         """Getter for MindForm.empathy. Override to add modifier logic."""
@@ -121,40 +104,9 @@ class MindForm(Mobile):
     def empathy(self) -> float:
         return self._apply_modifiers_to("empathy")
 
-    @recognizance.setter
-    def recognizance(self, new_recog: float) -> None:
-        """Setter for MindForm.recognizance. Override to add on-change logic."""
-        if not (0 <= new_recog <= 100):
-            raise ValueError("Argument 'new_recog' must be between 0 and 100 inclusive.")
-        self._recognizance = new_recog
-
-    @deconstruction.setter
-    def deconstruction(self, new_decon: float) -> None:
-        """Setter for MindForm.deconstruction. Override to add on-change logic."""
-        if not (0 <= new_decon <= 100):
-            raise ValueError("Argument 'new_decon' must be between 0 and 100 inclusive.")
-        self._deconstruction = new_decon
-
-    @attention.setter
-    def attention(self, new_atten: float) -> None:
-        """Setter for MindForm.attention. Override to add on-change logic."""
-        if not (0 <= new_atten <= 100):
-            raise ValueError("Argument 'new_atten' must be between 0 and 100 inclusive.")
-        self._attention = new_atten
-
-    @resolution.setter
-    def resolution(self, new_resol: float) -> None:
-        """Setter for MindForm.resolution. Override to add on-change logic."""
-        if not (0 <= new_resol <= 100):
-            raise ValueError("Argument 'new_resol' must be between 0 and 100 inclusive.")
-        self._resolution = new_resol
-
     @empathy.setter
     def empathy(self, new_empth: float) -> None:
-        """Setter for MindForm.empathy. Override to add on-change logic."""
-        if not (0 <= new_empth <= 100):
-            raise ValueError("Argument 'new_empth' must be between 0 and 100 inclusive.")
-        self._empathy = new_empth
+        self._set_base_stat("empathy", new_empth)
 
     def max_stress(self,
                    baseline: float = 25,
