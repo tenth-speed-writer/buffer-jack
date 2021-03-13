@@ -75,6 +75,28 @@ class AdditiveModifier(Modifier):
             return modified_stat + self.value
 
 
+class BaseAdditiveMultiplier(Modifier):
+    """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        Modifier.__init__(self=self,
+                          parent=parent,
+                          stat=stat,
+                          value=value,
+                          lifespan=lifespan)
+
+    def calculate(self, modified_stat: Optional[float] = None):
+        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
+        This one adds its value to the specified value."""
+        if modified_stat is None:
+            return getattr(self.parent, self.stat) + self.value
+        else:
+            return modified_stat + self.value
+
+
 class MultiplicativeModifier(Modifier):
     """A modifier which is applied by multiplication to its value."""
     def __init__(self,
