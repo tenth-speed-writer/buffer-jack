@@ -44,11 +44,20 @@ class MindForm(Mobile):
         self._empathy = empathy
 
         self._stress = 0
-        self.modifiers = {}
+        self.modifiers = {
+            "recognizance": [],
+            "deconstruction": [],
+            "attention": [],
+            "resolution": [],
+            "empathy": []
+        }
 
     def _apply_modifiers_to(self, stat: str):
         if not hasattr(self, stat):
             raise ValueError("Entity does not have a stat called '{}'!".format(stat))
+
+        if not stat in self.modifiers.keys():
+            raise ValueError("Entity's .modifiers dict has no value for key {}!".format(str(stat)))
 
         modifiers: List[Modifier] = self.modifiers[stat] if stat in self.modifiers.keys() else []
 
