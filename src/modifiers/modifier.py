@@ -1,8 +1,9 @@
-from typing import Optional, Callable
+from typing import Optional
 
 
 class Modifier:
     """Parent class for any kind of modifier to be applied to a specifiable stat."""
+
     def __init__(self, parent,
                  stat: str,
                  value: float,
@@ -63,75 +64,10 @@ class Modifier:
             self.on_tick()
 
 
-class AdditiveModifier(Modifier):
-    """A modifier which is summed with its value."""
-    def __init__(self,
-                 parent: object,
-                 stat: str,
-                 value: float,
-                 lifespan: Optional[int] = None):
-        Modifier.__init__(self=self,
-                          parent=parent,
-                          stat=stat,
-                          value=value,
-                          lifespan=lifespan)
-
-    def calculate(self, modified_stat: Optional[float] = None):
-        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
-        This one adds its value to the specified value."""
-        if modified_stat is None:
-            return getattr(self.parent, self.stat) + self.value
-        else:
-            return modified_stat + self.value
-
-
-class BaseAdditiveMultiplier(Modifier):
-    """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
-    def __init__(self,
-                 parent: object,
-                 stat: str,
-                 value: float,
-                 lifespan: Optional[int] = None):
-        Modifier.__init__(self=self,
-                          parent=parent,
-                          stat=stat,
-                          value=value,
-                          lifespan=lifespan)
-
-    def calculate(self, modified_stat: Optional[float] = None):
-        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
-        This one adds its value to the specified value."""
-        if modified_stat is None:
-            return getattr(self.parent, self.stat) + self.value
-        else:
-            return modified_stat + self.value
-
-
-class MultiplicativeModifier(Modifier):
-    """A modifier which is applied by multiplication to its value."""
-    def __init__(self,
-                 parent: object,
-                 stat: str,
-                 value: float,
-                 lifespan: Optional[int] = None):
-        Modifier.__init__(self=self,
-                          parent=parent,
-                          stat=stat,
-                          value=value,
-                          lifespan=lifespan)
-
-    def calculate(self, modified_stat: Optional[float] = None):
-        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
-        This one multiplies by the specified value."""
-        if modified_stat is None:
-            return getattr(self.parent, self.stat) * self.value
-        else:
-            return modified_stat * self.value
-
-
 class BlindModifier(Modifier):
     """A modifier which doesn't necessarily correspond to a parent stat.
     Can only be calculated using a specified initial value."""
+
     def __init__(self, parent,
                  stat: str,
                  value: float,
@@ -162,4 +98,128 @@ class BlindModifier(Modifier):
         if modified_stat is None:
             raise ValueError("Cannot calculate a BlindModifier without a specified value!")
         else:
-            super().calculate(modified_stat)
+            self._calculate(modified_stat)
+
+    def _calculate(self, val):
+        return val
+
+
+class AdditiveModifier(Modifier):
+    """A modifier which is summed with its value."""
+
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        Modifier.__init__(self=self,
+                          parent=parent,
+                          stat=stat,
+                          value=value,
+                          lifespan=lifespan)
+
+    def calculate(self, modified_stat: Optional[float] = None):
+        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
+        This one adds its value to the specified value."""
+        if modified_stat is None:
+            return getattr(self.parent, self.stat) + self.value
+        else:
+            return modified_stat + self.value
+
+
+class BlindAdditiveModifier(BlindModifier):
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        BlindModifier.__init__(self=self,
+                               parent=parent,
+                               stat=stat,
+                               value=value,
+                               lifespan=lifespan)
+
+    def _calculate(self, val):
+        return self.value + val
+
+
+class BaseAdditiveMultiplier(Modifier):
+    """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
+
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        Modifier.__init__(self=self,
+                          parent=parent,
+                          stat=stat,
+                          value=value,
+                          lifespan=lifespan)
+
+    def calculate(self, modified_stat: Optional[float] = None):
+        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
+        This one adds its value to the specified value."""
+        if modified_stat is None:
+            return getattr(self.parent, self.stat) + self.value
+        else:
+            return modified_stat + self.value
+
+
+class BlindBaseAdditiveMultiplier(BlindModifier):
+    """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
+
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        BlindModifier.__init__(self=self,
+                               parent=parent,
+                               stat=stat,
+                               value=value,
+                               lifespan=lifespan)
+
+    def _calculate(self, val):
+        return self.value + val
+
+
+class MultiplicativeModifier(Modifier):
+    """A modifier which is applied by multiplication to its value."""
+
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        Modifier.__init__(self=self,
+                          parent=parent,
+                          stat=stat,
+                          value=value,
+                          lifespan=lifespan)
+
+    def calculate(self, modified_stat: Optional[float] = None):
+        """Calculates this stat, either by pulling it from parent or applying it to another specified value.
+        This one multiplies by the specified value."""
+        if modified_stat is None:
+            return getattr(self.parent, self.stat) * self.value
+        else:
+            return modified_stat * self.value
+
+
+class BlindMultiplicativeModifier(BlindModifier):
+    """A modifier which is applied by multiplication to its value."""
+
+    def __init__(self,
+                 parent: object,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        BlindModifier.__init__(self=self,
+                               parent=parent,
+                               stat=stat,
+                               value=value,
+                               lifespan=lifespan)
+
+    def _calculate(self, val):
+        return self.value * val
