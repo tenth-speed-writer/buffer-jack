@@ -143,7 +143,7 @@ class BlindAdditiveModifier(BlindModifier):
         return self.value + val
 
 
-class BaseAdditiveMultiplier(Modifier):
+class BaseAdditiveModifier(Modifier):
     """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
 
     def __init__(self,
@@ -166,7 +166,7 @@ class BaseAdditiveMultiplier(Modifier):
             return modified_stat + self.value
 
 
-class BlindBaseAdditiveMultiplier(BlindModifier):
+class BlindBaseAdditiveModifier(BlindModifier):
     """Differentiated from an additive multiplier only in that it is applied *before* multiplicative modifiers."""
 
     def __init__(self,

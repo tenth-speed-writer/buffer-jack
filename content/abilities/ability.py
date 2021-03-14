@@ -1,34 +1,41 @@
 from typing import Dict, List, Type
 import src.modifiers.modifier as mod
+from content.entities.mobs import MindForm, CogForm
 from content.entities.mobs.fooform import FooForm
 
 
 class Ability:
     def __init__(self,
                  user: FooForm,
-                 target: FooForm,
                  stats: Dict):
         """
+        Create an instance of an Ability.
+        The user in question must possess the specified stats as attributes, unless this behavior is overridden.
+
         :param user: The entity which manifested this ability.
         :param stats: A dict with stats and their relative proportions (0.0->1.0) in stat value calculation."""
         self.user = user
-        self.target = target
         self.stats = stats
 
     @staticmethod
-    def _apply_mods_to_stat(base_stat: float,
-                            modifiers: List[mod.Modifier]) -> float:
-        def is_or_is_child(a: object, b: Type) -> bool:
-            return isinstance(a, b) or issubclass(a.__class__, b)
+    def is_or_is_child(a: object, b: Type) -> bool:
+        return isinstance(a, b) or issubclass(a.__class__, b)
 
+    @classmethod
+    def _apply_mods_to_stat(cls,
+                            base_stat: float,
+                            modifiers: List[mod.Modifier]) -> float:
         def is_base_additive(a: mod.Modifier) -> bool:
-            return is_or_is_child(a, mod.BaseAdditiveModifier) or is_or_is_child(a, mod.BlindBaseAdditiveModifier)
+            return cls.is_or_is_child(a, mod.BaseAdditiveModifier)\
+                   or cls.is_or_is_child(a, mod.BlindBaseAdditiveModifier)
 
         def is_multiplicative(a: mod.Modifier) -> bool:
-            return is_or_is_child(a, mod.MultiplicativeModifier) or is_or_is_child(a, mod.BlindMultiplicativeModifier)
+            return cls.is_or_is_child(a, mod.MultiplicativeModifier)\
+                   or cls.is_or_is_child(a, mod.BlindMultiplicativeModifier)
 
         def is_additive(a: mod.Modifier) -> bool:
-            return is_or_is_child(a, mod.AdditiveModifier) or is_or_is_child(a, mod.BlindAdditiveModifier)
+            return cls.is_or_is_child(a, mod.AdditiveModifier)\
+                   or cls.is_or_is_child(a, mod.BlindAdditiveModifier)
 
         base_additives = [m for m in modifiers if is_base_additive(m)]
         multiplicatives = [m for m in modifiers if is_multiplicative(m)]
@@ -62,3 +69,14 @@ class Ability:
     def vs_self(self):
         """Override with logic describing what happens when this ability is used against the fooform that used it."""
         pass
+
+    def use_on(self, target: FooForm):
+        """Selects and calls the appropriate vs_ method based on the target."""
+        if target is self.user:
+            self.vs_self()
+        elif self.is_or_is_child(target, CogForm):
+            self.vs_cogform(target)
+        elif self.is_or_is_child(target, MindForm):
+            self.vs_mindform(target)
+        else:
+            raise ValueError("Target ({}) must be a MindForm, a CogForm, or the user of this ability!")
