@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.modifiers import Modifier, MultiplicativeModifier, AdditiveModifier, BaseAdditiveMultiplier
+from src.modifiers import Modifier, MultiplicativeModifier, AdditiveModifier, BaseAdditiveModifier
 from src.entity.entities import Mobile
 
 
@@ -19,7 +19,7 @@ class FooForm(Mobile):
 
         # Separate out modifiers by additive or multiplicative
         base_adds = [m for m in modifiers
-                     if isinstance(m, BaseAdditiveMultiplier) or issubclass(m.__class__, BaseAdditiveMultiplier)]
+                     if isinstance(m, BaseAdditiveModifier) or issubclass(m.__class__, BaseAdditiveModifier)]
         adds = [m for m in modifiers
                 if isinstance(m, AdditiveModifier) or issubclass(m.__class__, AdditiveModifier)]
         mults = [m for m in modifiers
