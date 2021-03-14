@@ -223,6 +223,16 @@ class MenuOption:
     def subtext(self, st: str):
         self._subtext = st
 
+    def on_gets_cursor(self):
+        """Run when the player highlights this menu option.
+        By default, turns the selection .color green. Override to add more interesting logic."""
+        self.color = (25, 230, 25)
+
+    def on_loses_cursor(self):
+        """Run when the player moves from highlighting this menu option to highlighting another.
+        By default, turns the selection .color white. Override to add more interesting logic."""
+        self.color = (255, 255, 255)
+
 
 class MenuInputHandler(tcod.event.EventDispatch):
     def __init__(self, menu):
@@ -231,11 +241,13 @@ class MenuInputHandler(tcod.event.EventDispatch):
 
     def cmd_close_menu(self):
         """Set its .is_open to False, breaking the menu loop."""
-        self._menu.close()
+        self._menu.close_menu()
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         up_keys = [tcod.event.K_UP, tcod.event.K_KP_8, tcod.event.K_KP_PLUS]
         down_keys = [tcod.event.K_DOWN, tcod.event.K_KP_2, tcod.event.K_KP_MINUS]
+        skip_up_keys = [tcod.event.K_PAGEUP]
+        skip_down_keys = [tcod.event.K_PAGEDOWN]
         select_keys = [tcod.event.K_SPACE,
                        tcod.event.K_RETURN,
                        tcod.event.K_RETURN2,
@@ -245,13 +257,46 @@ class MenuInputHandler(tcod.event.EventDispatch):
         # TODO: Add page up/page down for multi-entity skips
         if event.sym in up_keys:
             self._menu.change_selection(PositionDelta(dx=0, dy=-1))
+
         elif event.sym in down_keys:
             self._menu.change_selection(PositionDelta(dx=0, dy=1))
+
+        elif event.sym in skip_up_keys:
+            skip_delta = 10
+
+            # Add a stop at the 0th MenuOption if skipping up
+            if self._menu.selected - skip_delta < 0 and self._menu.selected != 0:
+                skip_delta = self._menu.selected
+
+            elif self._menu.selected == 0:
+                skip_delta = 1
+
+            self._menu.change_selection(PositionDelta(dx=0, dy=-skip_delta))
+
+        elif event.sym in skip_down_keys:
+            skip_delta = 10
+
+            # Add a stop at the last MenuOption if skipping down
+            would_pass_end = self._menu.selected + skip_delta >= len(self._menu.contents)
+            at_end = self._menu.selected == len(self._menu.contents) - 1
+            if would_pass_end and not at_end:
+                # If we would skip past the end, but aren't already at it, then skip to it.
+                skip_delta = len(self._menu.contents) - self._menu.selected - 1
+                print("At: {}. Last index is at {}. skip_delta: {}".format(str(self._menu.selected),
+                                                                           str(len(self._menu.contents) - 1),
+                                                                           str(skip_delta)))
+            elif at_end:
+                # If we're at the end, just skip to 0.
+                skip_delta = 1
+                print("skipped at end")
+
+            self._menu.change_selection(PositionDelta(dx=0, dy=skip_delta))
+
         elif event.sym in select_keys:
             opt: MenuOption = self._menu.contents[self._menu.selected]
             opt.on_select(None)
+
         elif event.sym in exit_keys:
-            # TODO: Tell the menu to close
             self.cmd_close_menu()
 
     def ev_quit(self, event: tcod.event.Quit):
@@ -384,11 +429,16 @@ class Menu:
         """Add a menu option to the end of this menu's list of contents."""
         self._contents = [] + self._contents + [opt]
 
+        # If this is the first or only element in the menu contents,
+        # then be sure to fire its on_gets_cursor method.
+        # DEVNOTE: This might be a bug source if we have a MenuOption which needs the menu to be open.
+        if len(self._contents) == 1:
+            self._contents[0].on_gets_cursor()
+
     def remove_option(self, opt: MenuOption):
         if opt in self._contents:
             self._contents.remove(opt)
 
-    # TODO: Replace this behavior with one which respects ._menus as a protected member
     def open_menu(self) -> None:
         """Set this menu as the last element of the interface menus list"""
         self.interface.add_menu(self)
@@ -481,10 +531,20 @@ class Menu:
         y1 = y0+dy
 
         # If y1 is past the end of the list indices, loop back.
-        while y1 > y_max:
-            y1 -= num_options
+        if y1 >= 0:
+            while y1 > y_max:
+                y1 -= num_options
 
+        # In the case y1 is a negative index, loop back until it's smaller than
+        if y1 < 0:
+            y1_neg = -y1
+            while y1_neg > y_max:
+                y1_neg -= num_options
+            y1 = num_options - y1_neg
+
+        self._contents[self._selected].on_loses_cursor()
         self._selected = y1
+        self._contents[self._selected].on_gets_cursor()
 
     @property
     def dispatch(self) -> tcod.event.EventDispatch:
@@ -523,14 +583,6 @@ class Menu:
                                             color=color)))
             return drawables_
 
-        # Disregard drawing menu borders here.
-        # If we want one, we can make the console draw it elsewhere.
-        #
-        # if self._has_border:
-        #     console.draw_frame(x0, y0, self._width, self._height)
-        #     h = self._height - 2  # Effective width and height after drawing the border
-        #     w = self._width - 2
-        # else:
         h = self._height
         w = self._width
 
@@ -544,7 +596,7 @@ class Menu:
         # TODO: Make .width/.height getters or find a more graceful way of doing this.
 
         # Determine the x position of the menu options and the first y position
-        opt_x0 = self.pad_left + floor(0.5 * (w - self.contents[0]._width)) - 1
+        opt_x0 = self.pad_left + floor(0.5 * (w - self.contents[0].size[0])) - 1
         opt_y0 = self.pad_top
         locations = [(opt_x0, opt_y0)]  # Valid top left corner tiles for drawing MenuItems
 
@@ -557,14 +609,18 @@ class Menu:
         num_opts = len(locations)
         if num_opts >= len(self.contents):                   # If no more contents than places to put them
             opts = self.contents                             # Just render them all
-        else:                                                # Otherwise
-            opts = self.contents[self._selected + num_opts]  # Render as many as we can
+        else:                                                # Otherwise, render as many as we can
+            # If the option selected isn't the first in the list, render from one step back going downward
+            if self._selected == 0:
+                opts = self.contents[self._selected:self._selected + num_opts]
+            else:
+                opts = self.contents[self._selected - 1:self._selected + num_opts - 1]
 
         drawables: List[Tuple[int, int, Sigil]] = []
         for i in range(0, len(opts)):
             rows = opts[i].rows
             pos = locations[i]
-            drawables += rows_to_drawables(x_0=x0 + pos[0], y_0=y0 + pos[1], opt_rows=rows)
+            drawables += rows_to_drawables(x_0=x0, y_0=y0 + pos[1], opt_rows=rows)
 
         return drawables
 

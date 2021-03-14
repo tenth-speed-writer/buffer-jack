@@ -183,3 +183,10 @@ class Entity:
         """Set whether an entity is passable to other entities.
         Override to enact logic on variable change."""
         self._passable = can_pass
+
+    def destroy(self):
+        """Removes an entity from the playfield. Override to add on-destroyed logic."""
+        if not self.cell:
+            raise Exception("Tried to destroy entity {} which doesn't exist on the field."
+                            .format(str(self)))
+        self.cell.remove_entity(self)

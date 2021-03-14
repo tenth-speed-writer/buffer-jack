@@ -21,8 +21,7 @@ Alo. & Rol. suggest making a global clock that decides what--including simulatio
 ---
 
 Agenda:
-* Menus need to render a cursor on their selected elements
-* Transfer 2D grids to NumPy array format
-
-
+* Find any list-of-lists used in rendering and replace with NumPy arrays
+* Fix animation rendering position bug
+* Implement and debug game log
 ---
