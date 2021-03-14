@@ -1,6 +1,11 @@
-from .modifier import Modifier, AdditiveModifier, MultiplicativeModifier, BaseAdditiveMultiplier
+from .modifier import Modifier, AdditiveModifier, MultiplicativeModifier, BaseAdditiveMultiplier, BlindModifier,\
+    BlindAdditiveModifier, BlindBaseAdditiveMultiplier, BlindMultiplicativeModifier
 
 __all__ = ["Modifier",
            "AdditiveModifier",
            "MultiplicativeModifier",
-           "BaseAdditiveMultiplier"]
+           "BaseAdditiveMultiplier",
+           "BlindModifier",
+           "BlindMultiplicativeModifier",
+           "BlindBaseAdditiveMultiplier",
+           "BlindAdditiveModifier"]
