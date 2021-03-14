@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import Optional, Callable
 
 
 class Modifier:
@@ -44,13 +44,23 @@ class Modifier:
     def is_active(self):
         return (self.lifespan is None) or (self.lifespan > 0)
 
-    def remove(self):
+    def remove(self) -> None:
         mods: dict = self.parent.modifiers
         mods.pop(self.stat)
 
-    def tick(self):
-        if not (self.lifespan is None) and self.lifespan > 0:
+    def on_tick(self) -> None:
+        """Logic executed after all tick-related logic has occurred. Override to add functionality."""
+        pass
+
+    def tick(self) -> None:
+        no_timeout = self.lifespan is None  # If lifespan is specifically None, there's no timeout
+        if no_timeout:
+            self.on_tick()
+        elif self.lifespan == 0:
+            self.remove()
+        else:
             self.lifespan -= 1
+            self.on_tick()
 
 
 class AdditiveModifier(Modifier):
@@ -119,4 +129,37 @@ class MultiplicativeModifier(Modifier):
             return modified_stat * self.value
 
 
-# ValueDict = Dict[List[Modifier]]
+class BlindModifier(Modifier):
+    """A modifier which doesn't necessarily correspond to a parent stat.
+    Can only be calculated using a specified initial value."""
+    def __init__(self, parent,
+                 stat: str,
+                 value: float,
+                 lifespan: Optional[int] = None):
+        """
+        Identical to a Modifier, except that the parent doesn't need to have the stat
+        as an attribute and .calculate() requires an initial value.
+
+        :param parent: an object possessing both the specified stat as a property, as well as a .modifiers dict.
+        :param stat: a string corresponding to the attribute name of the stat in question.
+        :param value: a float value representing the argument operation of this modifier
+        :param lifespan: in number of ticks; if None, will not expire over time.
+        """
+        self.stat = stat
+        self.value = value
+        self.lifespan = lifespan
+        self._initial_lifespan = lifespan
+
+        if not hasattr(parent, "modifiers") or not isinstance(getattr(parent,
+                                                                      "modifiers"), dict):
+            raise ValueError("The parent object {} must have an attribute 'modifiers' which must be a dict"
+                             .format(str(parent)))
+
+        else:
+            self._parent = parent
+
+    def calculate(self, modified_stat: Optional[float] = None):
+        if modified_stat is None:
+            raise ValueError("Cannot calculate a BlindModifier without a specified value!")
+        else:
+            super().calculate(modified_stat)
