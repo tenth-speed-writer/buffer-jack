@@ -56,18 +56,23 @@ class MindForm(FooForm):
                      "stress_loss"):  # Applied to stress_delta when change is negative
             self.modifiers[stat] = []
 
+    # Recognizance
     @property
     def base_recognizance(self) -> float:
         """Getter for MindForm.recognizance. Override to add modifier logic."""
         return self._recognizance
 
     @property
-    def recognizance(self):
+    def recognizance(self) -> float:
         return self._apply_modifiers_to("recognizance")
 
+    @recognizance.setter
+    def recognizance(self, new_recog: float) -> None:
+        self._set_base_stat("recognizance", new_recog)
+
+    # Deconstruction
     @property
     def base_deconstruction(self) -> float:
-        """Getter for MindForm.deconstruction. Override to add modifier logic."""
         return self._deconstruction
 
     @property
@@ -78,9 +83,9 @@ class MindForm(FooForm):
     def deconstruction(self, new_decon: float) -> None:
         self._set_base_stat("deconstruction", new_decon)
 
+    # Attention
     @property
     def base_attention(self) -> float:
-        """Getter for MindForm.attention. Override to add modifier logic."""
         return self._attention
 
     @property
@@ -91,9 +96,9 @@ class MindForm(FooForm):
     def attention(self, new_atten: float) -> None:
         self._set_base_stat("attention", new_atten)
 
+    # Resolution
     @property
     def base_resolution(self) -> float:
-        """Getter for MindForm.resolution. Override to add modifier logic."""
         return self._resolution
 
     @property
@@ -104,6 +109,7 @@ class MindForm(FooForm):
     def resolution(self, new_resol: float) -> None:
         self._set_base_stat("resolution", new_resol)
 
+    # Empathy
     @property
     def base_empathy(self) -> float:
         """Getter for MindForm.empathy. Override to add modifier logic."""
@@ -117,6 +123,7 @@ class MindForm(FooForm):
     def empathy(self, new_empth: float) -> None:
         self._set_base_stat("empathy", new_empth)
 
+    # Stress
     def max_stress(self,
                    recog_weight: float = 0.2,
                    resol_weight: float = 0.5,
@@ -180,3 +187,8 @@ class MindForm(FooForm):
         else:
             # Just apply the delta
             self.stress += delta
+
+    # Event based methods
+    def on_destroy(self) -> None:
+        """TODO: Replace this with a log of the event in some greater logging apparatus."""
+        pass
