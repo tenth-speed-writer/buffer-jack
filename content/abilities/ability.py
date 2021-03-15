@@ -18,7 +18,7 @@ class Ability:
         self.stats = stats
 
     @staticmethod
-    def is_or_is_child(a: object, b: Type) -> bool:
+    def _is_or_is_child(a: object, b: Type) -> bool:
         return isinstance(a, b) or issubclass(a.__class__, b)
 
     @classmethod
@@ -26,16 +26,16 @@ class Ability:
                             base_stat: float,
                             modifiers: List[mod.Modifier]) -> float:
         def is_base_additive(a: mod.Modifier) -> bool:
-            return cls.is_or_is_child(a, mod.BaseAdditiveModifier)\
-                   or cls.is_or_is_child(a, mod.BlindBaseAdditiveModifier)
+            return cls._is_or_is_child(a, mod.BaseAdditiveModifier)\
+                   or cls._is_or_is_child(a, mod.BlindBaseAdditiveModifier)
 
         def is_multiplicative(a: mod.Modifier) -> bool:
-            return cls.is_or_is_child(a, mod.MultiplicativeModifier)\
-                   or cls.is_or_is_child(a, mod.BlindMultiplicativeModifier)
+            return cls._is_or_is_child(a, mod.MultiplicativeModifier)\
+                   or cls._is_or_is_child(a, mod.BlindMultiplicativeModifier)
 
         def is_additive(a: mod.Modifier) -> bool:
-            return cls.is_or_is_child(a, mod.AdditiveModifier)\
-                   or cls.is_or_is_child(a, mod.BlindAdditiveModifier)
+            return cls._is_or_is_child(a, mod.AdditiveModifier)\
+                   or cls._is_or_is_child(a, mod.BlindAdditiveModifier)
 
         base_additives = [m for m in modifiers if is_base_additive(m)]
         multiplicatives = [m for m in modifiers if is_multiplicative(m)]
@@ -67,16 +67,16 @@ class Ability:
         pass
 
     def vs_self(self):
-        """Override with logic describing what happens when this ability is used against the fooform that used it."""
+        """Override with logic describing what happens when this ability is used against the FooForm that used it."""
         pass
 
     def use_on(self, target: FooForm):
         """Selects and calls the appropriate vs_ method based on the target."""
         if target is self.user:
             self.vs_self()
-        elif self.is_or_is_child(target, CogForm):
+        elif self._is_or_is_child(target, CogForm):
             self.vs_cogform(target)
-        elif self.is_or_is_child(target, MindForm):
+        elif self._is_or_is_child(target, MindForm):
             self.vs_mindform(target)
         else:
             raise ValueError("Target ({}) must be a MindForm, a CogForm, or the user of this ability!")
