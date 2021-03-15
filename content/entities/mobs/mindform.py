@@ -4,6 +4,7 @@ from .fooform import FooForm
 
 class MindForm(FooForm):
     """A coherent, sapient entity. The buffer jack, or someone that's eluded them."""
+
     def __init__(self, name: str, size: int,
                  sigil: Sigil, base_move_cost: int,
                  recognizance: float,
@@ -44,8 +45,16 @@ class MindForm(FooForm):
         self._stress = 0
 
         # Initialize empty lists in the .modifiers dict for each assigned stat
-        for stat in ("recognizance", "deconstruction", "attention", "resolution", "empathy"):
-            self.modifiers[stat] = {}
+        for stat in ("recognizance",
+                     "deconstruction",
+                     "attention",
+                     "resolution",
+                     "empathy",
+
+                     "max_stress",
+                     "stress_gain",   # Applied to stress_delta when change is positive
+                     "stress_loss"):  # Applied to stress_delta when change is negative
+            self.modifiers[stat] = []
 
     @property
     def base_recognizance(self) -> float:
@@ -109,7 +118,6 @@ class MindForm(FooForm):
         self._set_base_stat("empathy", new_empth)
 
     def max_stress(self,
-                   baseline: float = 25,
                    recog_weight: float = 0.2,
                    resol_weight: float = 0.5,
                    decon_weight: float = 0.2,
@@ -120,11 +128,14 @@ class MindForm(FooForm):
 
         All stats affect max stress to varying degrees.
         High resolution makes the most difference; high empathy actually hurts it."""
-        return sum((recog_weight * self.recognizance,
-                    resol_weight * self.resolution,
-                    decon_weight * self.deconstruction,
-                    atten_weight * self.attention,
-                    empth_weight * self.empathy)) + baseline
+        stat_sum = sum((recog_weight * self.recognizance,
+                        resol_weight * self.resolution,
+                        decon_weight * self.deconstruction,
+                        atten_weight * self.attention,
+                        empth_weight * self.empathy))
+
+        return self._apply_blind_modifiers_to(stat="max_stress",
+                                              initial_val=stat_sum)
 
     @property
     def stress(self):
@@ -139,7 +150,7 @@ class MindForm(FooForm):
     def on_critical_stress(self):
         """By default, remove this MindForm from the playfield and print to the gamelog about it.
         Override and call in order to add what more-or-less amounts to on-death logic."""
-        self.playfield.interface.print_to_log("{} loses cohesion due to extreme duress!"
+        self.playfield.interface.print_to_log("{} jacks out due to extreme duress!"
                                               .format(self.name))
         self.destroy()
 
@@ -151,12 +162,21 @@ class MindForm(FooForm):
 
         max_stress = self.max_stress()
 
-        if self.stress + change_in_stress < 0:
-            self.stress = float(0)
+        # Apply stress_gain or stress_loss modifiers, as appropriate
+        if change_in_stress > 0:
+            delta = self._apply_blind_modifiers_to(stat="stress_gain",
+                                                   initial_val=change_in_stress)
+        else:
+            delta = self._apply_blind_modifiers_to(stat="stress_loss",
+                                                   initial_val=change_in_stress)
 
-        elif self.stress + change_in_stress >= max_stress:
+        if self.stress + delta < 0:
+            # Floor minimum stress at 0
+            self.stress = float(0)
+        elif self.stress + delta >= max_stress:
+            # Cap max stress at max_stress and also call self.on_critical_stress()
             self.stress = self.max_stress()
             self.on_critical_stress()
-
         else:
-            self.stress += change_in_stress
+            # Just apply the delta
+            self.stress += delta
