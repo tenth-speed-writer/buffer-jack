@@ -38,6 +38,37 @@ class FooForm(Mobile):
 
         return result
 
+    def _apply_blind_modifiers_to(self, stat: str, initial_val: float):
+        """As per apply_modifiers_to, but takes a calculated stat rather than an attribute.
+        Useful for calculating blind modifiers."""
+        if stat not in self.modifiers.keys():
+            raise ValueError("Entity's .modifiers dict has no value for key {}!".format(str(stat)))
+
+        modifiers: List[Modifier] = self.modifiers[stat]\
+            if stat in self.modifiers.keys()\
+            else []
+
+        # Separate out modifiers by additive or multiplicative
+        base_adds = [m for m in modifiers
+                     if isinstance(m, BaseAdditiveModifier) or issubclass(m.__class__, BaseAdditiveModifier)]
+        adds = [m for m in modifiers
+                if isinstance(m, AdditiveModifier) or issubclass(m.__class__, AdditiveModifier)]
+        mults = [m for m in modifiers
+                 if isinstance(m, MultiplicativeModifier) or issubclass(m.__class__, MultiplicativeModifier)]
+
+        # Initialize the result as the base stat
+        result: float = initial_val
+
+        # Apply base additive, before multiplicative, before additive
+        for mod in base_adds:
+            result = mod.calculate(result)
+        for mod in mults:
+            result = mod.calculate(result)
+        for mod in adds:
+            result = mod.calculate(result)
+
+        return result
+
     def _set_base_stat(self, stat_name: str, value: float):
         if 0 <= value <= 100:
             setattr(self, "_" + stat_name, value)
