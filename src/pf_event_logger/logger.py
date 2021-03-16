@@ -2,92 +2,91 @@ from typing import Optional
 import sqlite3
 
 
-def _initialize_pf_db(conn: sqlite3.Connection):
-    with conn.cursor() as c:
-        c.execute("""CREATE TABLE entities (
-                         ent_id TEXT PRIMARY KEY,
-                         type TEXT NOT NULL
-        );""")
+def _initialize_pf_db(c: sqlite3.Cursor):
+    c.execute("""CREATE TABLE entities (
+                     ent_id TEXT PRIMARY KEY,
+                     type TEXT NOT NULL
+    );""")
 
-        # The actual performance gain for this is probably negligible and
-        # debatable from the engineering perspective, but even in a hobby
-        # game project it's worth considering best practice.
-        #
-        # Admittedly, even the use of an index on a column with two possible
-        # values is itself a bit silly, but... humor me, lovely?
-        c.execute("""CREATE INDEX entity_id_type
-                         ON entities (ent_id, type)""")
+    # The actual performance gain for this is probably negligible and
+    # debatable from the engineering perspective, but even in a hobby
+    # game project it's worth considering best practice.
+    #
+    # Admittedly, even the use of an index on a column with two possible
+    # values is itself a bit silly, but... humor me, lovely?
+    c.execute("""CREATE INDEX entity_id_type
+                     ON entities (ent_id, type)""")
 
-        # Create a table of entity introductions to the playfield.
-        c.execute("""CREATE TABLE ents_introduced (
-                         id INTEGER NOT NULL AUTOINCREMENT,
-                         ent_id TEXT NOT NULL,
-                         spawn_x INTEGER NOT NULL,
-                         spawn_y INTEGER NOT NULL,
+    # Create a table of entity introductions to the playfield.
+    c.execute("""CREATE TABLE ents_introduced (
+                     id INTEGER PRIMARY_KEY AUTO_INCREMENT,
+                     ent_id TEXT NOT NULL,
+                     spawn_x INTEGER NOT NULL,
+                     spawn_y INTEGER NOT NULL,
+                     
+                     CONSTRAINT fk_ent_id
+                         FOREIGN KEY (ent_id)
+                         REFERENCES entities(ent_id)
+    );""")
+
+    # Create a table of entity destruction events.
+    c.execute("""CREATE TABLE ents_destroyed (
+                     id INTEGER PRIMARY_KEY AUTO_INCREMENT,
+                     ent_id TEXT NOT NULL,
+                     destroyer TEXT,
+                     
+                     CONSTRAINT fk_ent_id
+                         FOREIGN KEY (ent_id)
+                         REFERENCES entities(ent_id),
                          
-                         CONSTRAINT fk_ent_id
-                             FOREIGN KEY (ent_id)
-                             REFERENCES entities(ent_id)
-        );""")
+                     CONSTRAINT fk_destroyer
+                         FOREIGN KEY (destroyer)
+                         REFERENCES entities(ent_id)
+    );""")
 
-        # Create a table of entity destruction events.
-        c.execute("""CREATE TABLE ents_destroyed (
-                         id INTEGER NOT NULL AUTOINCREMENT,
-                         ent_id TEXT NOT NULL,
-                         destroyer TEXT,
-                         
-                         CONSTRAINT fk_ent_id
-                             FOREIGN KEY (ent_id)
-                             REFERENCES entities(ent_id),
-                             
-                         CONSTRAINT fk_destroyer
-                             FOREIGN KEY (destroyer)
-                             REFERENCES entities(ent_id)
-        );""")
+    # Create views which divvy up the entities table into mindforms and cogforms.
+    c.execute("""CREATE VIEW mindforms AS
+                     SELECT * FROM entities
+                         WHERE entities.type = "mindform"
+    ;""")
 
-        # Create views which divvy up the entities table into mindforms and cogforms.
-        c.execute("""CREATE VIEW mindforms AS
-                         SELECT * FROM entities
-                             WHERE entities.type = "mindform"
-        ;""")
+    c.execute("""CREATE VIEW cogforms AS
+                     SELECT * FROM entities
+                         WHERE entities.type = "cogform"
+    ;""")
 
-        c.execute("""CREATE VIEW cogforms AS
-                         SELECT * FROM entities
-                             WHERE entities.type = "cogform"
-        ;""")
+    # Create a table to keep track of abilities.
+    # The IDs may vary wildly for cogforms' abilities depended on how
+    # they're generated, but the player's should be much easier to track.
+    c.execute("""CREATE TABLE abilities (
+                     ability_id TEXT NOT NULL,
+                     user_id TEXT NOT NULL,
+                     name TEXT,
+                     
+                     PRIMARY KEY (ability_id, user_id),
+                     
+                     CONSTRAINT fk_user_id
+                         FOREIGN KEY (user_id)
+                         REFERENCES entities(ent_id)
+    );""")
 
-        # Create a table to keep track of abilities.
-        # The IDs may vary wildly for cogforms' abilities depended on how
-        # they're generated, but the player's should be much easier to track.
-        c.execute("""CREATE TABLE abilities (
-                         ability_id TEXT NOT NULL,
-                         user_id TEXT NOT NULL,
-                         name TEXT,
-                         
-                         PRIMARY KEY (ability_id, user_id),
-                         
-                         CONSTRAINT fk_user_id
-                             FOREIGN KEY (user_id)
-                             REFERENCES entities(ent_id)
-        );""")
-
-        # Create a table which tracks uses of abilities and their targets.
-        c.execute("""CREATE TABLE abilities_used (
-                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                         ability INTEGER NOT NULL,
-                         user TEXT NOT NULL,
-                         target TEXT NOT NULL,
-                         
-                         CONSTRAINT fk_ability
-                             FOREIGN KEY (ability)
-                             REFERENCES abilities(ability_id),
-                         CONSTRAINT fk_user
-                             FOREIGN KEY (user)
-                             REFERENCES entities(ent_id),
-                         CONSTRAINT fk_target
-                             FOREIGN KEY (target)
-                             REFERENCES entities(ent_id)
-        );""")
+    # Create a table which tracks uses of abilities and their targets.
+    c.execute("""CREATE TABLE abilities_used (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     ability INTEGER NOT NULL,
+                     user TEXT NOT NULL,
+                     target TEXT NOT NULL,
+                     
+                     CONSTRAINT fk_ability
+                         FOREIGN KEY (ability)
+                         REFERENCES abilities(ability_id),
+                     CONSTRAINT fk_user
+                         FOREIGN KEY (user)
+                         REFERENCES entities(ent_id),
+                     CONSTRAINT fk_target
+                         FOREIGN KEY (target)
+                         REFERENCES entities(ent_id)
+    );""")
 
 
 class PFEventLogger:
@@ -98,7 +97,8 @@ class PFEventLogger:
         self.playfield = playfield
 
         self.conn = sqlite3.connect(":memory:")
-        _initialize_pf_db(self.conn)
+        with self.conn.cursor() as c:
+            _initialize_pf_db(c)
 
         if from_db:
             from_db.backup(self.conn)
@@ -156,4 +156,4 @@ class PFEventLogger:
 
 
 mem_db = sqlite3.connect(":memory:")
-_initialize_pf_db(mem_db)
+_initialize_pf_db(mem_db.cursor())
