@@ -1,6 +1,9 @@
 from src.sigil import Sigil
 from .fooform import FooForm
+from typing import Optional
+from src.entity.entities import Mobile
 
+import uuid
 
 class CogForm(FooForm):
     """Represents a CogForm--an enemy or a non-sapient NPC."""
@@ -11,11 +14,18 @@ class CogForm(FooForm):
                  malignancy: float,
                  glimmer: float,
                  cogmass: float,
-                 virality: float):
+                 virality: float,
+                 ent_id: Optional[int] = None):
         super().__init__(name=name,
                          size=size,
                          sigil=sigil,
                          base_move_cost=base_move_cost)
+
+        # If not given an existing ent_id, create a new UUID for this cogform.
+        # This is usually the case when creating a new one instead of loading a persistent one.
+        if ent_id is None:
+            self.ent_id = str(uuid.uuid4())
+
 
         # Test that all provided base stats are valid.
         if not sum([0 <= val <= 100 for val in (depth, malignancy, glimmer, cogmass, virality)]) == 5:
@@ -37,6 +47,14 @@ class CogForm(FooForm):
                      "coherency_gain",
                      "coherency_loss"):
             self.modifiers[stat] = []
+
+    def introduce_at(self, x, y, playfield) -> None:
+        super().introduce_at(x, y, playfield)
+        self.playfield.logger.add_entity(ent_id=self.ent_id,
+                                         type_="cogform")
+        self.playfield.logger.add_entity_introduced(ent_id=self.ent_id,
+                                                    spawn_x=x,
+                                                    spawn_y=y)
 
     # Depth
     @property
@@ -116,7 +134,9 @@ class CogForm(FooForm):
             raise ValueError("new_c must be a float greater than or equal to zero. Got {}"
                              .format(str(new_c)))
 
-    def coherency_delta(self, change_in_coherency: float) -> None:
+    def coherency_delta(self,
+                        change_in_coherency: float,
+                        cause: Optional[Mobile] = None) -> None:
         """Apply mods based on the sign of the delta, and floor coherency at 0."""
         if change_in_coherency < 0:
             delta = self._apply_blind_modifiers_to(stat="coherency_loss",
@@ -134,6 +154,25 @@ class CogForm(FooForm):
             self._coherency += delta
 
     # Event-based methods
-    def on_zero_coherency(self) -> None:
-        """Overridable. Logic to be run just after this cogform's coherency is reduced to zero."""
+    def on_destroy(self) -> None:
+        """Override to add on-death behavior."""
         pass
+
+    def on_zero_coherency(self, cause: Optional[Mobile] = None) -> None:
+        """Overridable. Logic to be run just after this cogform's coherency is reduced to zero.
+        Be sure when overriding to call self.on_destroy and self.destroy after all other logic."""
+
+        # Print to the player's text log
+        if self.name and self.name.strip(" ") != "":
+            self.playfield.interface.print_to_log("{} loses coherency and fades into the buffer!".format(self.name),
+                                                  color=self.sigil.color)
+        else:
+            self.playfield.interface.print_to_log("A cognitive form loses coherency and fades into the buffer!",
+                                                  color=self.sigil.color)
+
+        # Make a note in the playfield event logger
+        self.playfield.logger.add_entity_destroyed(ent_id=self.ent_id,
+                                                   destroyer=cause)
+
+        # Run destroy logic
+        self.destroy()
