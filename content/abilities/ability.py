@@ -1,21 +1,49 @@
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Optional
 import src.modifiers.modifier as mod
 from content.entities.mobs import MindForm, CogForm
 from content.entities.mobs.fooform import FooForm
+from src.pf_event_logger.logger import PFEventLogger
 
 
 class Ability:
+    def add_to_logger(self, logger: PFEventLogger):
+        """Adds a row in a specified playfield logger for this event."""
+        logger.add_ability(ability_id=self.ability_id,
+                           name=self.name)
+
     def __init__(self,
+                 name: str,
                  user: FooForm,
-                 stats: Dict):
+                 stats: Dict,
+                 ability_id: Optional[str] = None):
         """
         Create an instance of an Ability.
         The user in question must possess the specified stats as attributes, unless this behavior is overridden.
 
+        Ability ID is generated automatically based on ability name, so the same
+        ability on different entities will have the same ability_id in the game logs.
+        Be sure to specify a different ability_id if you want to be able to differentiate.
+
+        :param name: A string representing the name of this ability
         :param user: The entity which manifested this ability.
-        :param stats: A dict with stats and their relative proportions (0.0->1.0) in stat value calculation."""
+        :param stats: A dict with stats and their relative proportions (0.0->1.0) in stat value calculation.
+        :param ability_id: An ID by which to refer to this exact ability in the log. If none, defaults to '__name__'"""
+
+        if name.strip(" ") != "":
+            self.name = name
+        else:
+            raise ValueError("Attribute 'name' cannot be a blank string!")
+
+        if ability_id:
+            self.ability_id = ability_id
+        else:
+            self.ability_id = "__" + name + "__"
+
         self.user = user
         self.stats = stats
+
+        # Log this user having an ability with this ability ID
+        self.add_to_logger(user.playfield.logger)
 
     @staticmethod
     def _is_or_is_child(a: object, b: Type) -> bool:
@@ -71,7 +99,9 @@ class Ability:
         pass
 
     def use_on(self, target: FooForm):
-        """Selects and calls the appropriate vs_ method based on the target."""
+        """Selects and calls the appropriate vs_ method based on the target. Also logs it."""
+
+        # Determine which vs_ method to call, then call it.
         if target is self.user:
             self.vs_self()
         elif self._is_or_is_child(target, CogForm):
@@ -80,3 +110,8 @@ class Ability:
             self.vs_mindform(target)
         else:
             raise ValueError("Target ({}) must be a MindForm, a CogForm, or the user of this ability!")
+
+        # If nothing went wrong engine-wise, log an ability_used with the user's playfield's event logger
+        self.user.playfield.logger.add_ability_used(ability_id=self.ability_id,
+                                                    user_id=self.user.ent_id,
+                                                    target_id=target.ent_id)
