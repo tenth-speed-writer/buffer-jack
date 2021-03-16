@@ -106,7 +106,7 @@ class MapGenerator:
 
         return ents
 
-    def generate(self, debug=False) -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """Run this MapGenerator's actual map generation logic. Highly overridable,
         since this base method just renders and returns the map's initial state.
 
