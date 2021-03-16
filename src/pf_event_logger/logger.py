@@ -34,7 +34,7 @@ def _initialize_pf_db(conn: sqlite3.Connection):
         c.execute("""CREATE TABLE ents_destroyed (
                          id INTEGER NOT NULL AUTOINCREMENT,
                          ent_id TEXT NOT NULL,
-                         destroyer TEXT NOT NULL,
+                         destroyer TEXT,
                          
                          CONSTRAINT fk_ent_id
                              FOREIGN KEY (ent_id)
@@ -60,8 +60,15 @@ def _initialize_pf_db(conn: sqlite3.Connection):
         # The IDs may vary wildly for cogforms' abilities depended on how
         # they're generated, but the player's should be much easier to track.
         c.execute("""CREATE TABLE abilities (
-                         ability_id TEXT PRIMARY KEY,
-                         name TEXT
+                         ability_id TEXT NOT NULL,
+                         user_id TEXT NOT NULL,
+                         name TEXT,
+                         
+                         PRIMARY KEY (ability_id, user_id),
+                         
+                         CONSTRAINT fk_user_id
+                             FOREIGN KEY (user_id)
+                             REFERENCES entities(ent_id)
         );""")
 
         # Create a table which tracks uses of abilities and their targets.
@@ -84,9 +91,12 @@ def _initialize_pf_db(conn: sqlite3.Connection):
 
 
 class PFEventLogger:
-    def __init__(self, from_db: Optional[sqlite3.Connection]):
+    def __init__(self, playfield,
+                 from_db: Optional[sqlite3.Connection] = None):
         """Creates a database based on the schema defined in logger.py.
         Optionally loads from the contents of an existing database (for example, one on disk.)"""
+        self.playfield = playfield
+
         self.conn = sqlite3.connect(":memory:")
         _initialize_pf_db(self.conn)
 
@@ -116,30 +126,26 @@ class PFEventLogger:
                       .format(ent_id, type_))
 
     def add_entity_introduced(self, ent_id: str,
-                              spawn_x: int, spawn_y:int) -> None:
+                              spawn_x: int, spawn_y: int) -> None:
         """Record an entity as being introduced to the playfield, and also where."""
         with self.cursor() as c:
             c.execute("""INSERT INTO ents_introduced(ent_id, spawn_x, spawn_y)
                              VALUES({}, {}, {})"""
                       .format(ent_id, str(spawn_x), str(spawn_y)))
 
-    def add_entity_destroyed(self, ent_id: str, destroyer: str) -> None:
+    def add_entity_destroyed(self, ent_id: str,
+                             destroyer: Optional[str] = None) -> None:
         """Record an entity being destroyed, and what entity destroyed them."""
         with self.cursor() as c:
             c.execute("""INSERT INTO ents_destroyed(ent_id, destroyer)
                              VALUES({}, {})"""
                       .format(ent_id, destroyer))
 
-    def add_ability(self, ability_id: str, name: str) -> None:
-        """Adds an ability to the log, failing quietly if that ability_id already exists."""
+    def add_ability(self, ability_id: str, user_id: str, name: str) -> None:
+        """Adds an instance of a user having an ability to the log."""
         with self.cursor() as c:
-            ids_query = "SELECT ability_id FROM abilities;"
-            ability_ids = [row[0] for row
-                           in c.execute(ids_query).fetchall()]
-
-            if ability_id not in ability_ids:
-                c.execute("INSERT INTO abilities(ability_id, name) VALUES({}, {})"
-                          .format(ability_id, name))
+            c.execute("INSERT INTO abilities(ability_id, user_id, name) VALUES({}, {}, {})"
+                      .format(ability_id, user_id, name))
 
     def add_ability_used(self, ability_id: str, user_id: str, target_id: str) -> None:
         """Adds the use of an ability by one entity on another to the playfield log."""
