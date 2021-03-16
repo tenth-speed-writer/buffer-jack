@@ -6,6 +6,7 @@ from src.animation import Animation, AnimationFrame, OverlappingSigilAnimation
 from tcod.event import EventDispatch
 from math import floor
 from .cell import Cell
+from src.pf_event_logger import PFEventLogger
 import numpy as np
 
 # Aliased class for type hinting. It's a class that's not uppercase.
@@ -41,6 +42,8 @@ class PlayField:
         self._window_width = window_width
         self._window_x0 = window_x0
         self._window_y0 = window_y0
+
+        self.logger = PFEventLogger(self)
 
         self._animations: List = []
 
