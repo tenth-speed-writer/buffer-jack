@@ -26,7 +26,6 @@ class CogForm(FooForm):
         if ent_id is None:
             self.ent_id = str(uuid.uuid4())
 
-
         # Test that all provided base stats are valid.
         if not sum([0 <= val <= 100 for val in (depth, malignancy, glimmer, cogmass, virality)]) == 5:
             raise ValueError("All base attributes must be between 0 and 100 (inclusive)")
@@ -172,7 +171,7 @@ class CogForm(FooForm):
 
         # Make a note in the playfield event logger
         self.playfield.logger.add_entity_destroyed(ent_id=self.ent_id,
-                                                   destroyer=cause)
+                                                   destroyer=cause.ent_id)
 
         # Run destroy logic
         self.destroy()
