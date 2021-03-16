@@ -5,6 +5,7 @@ from src.entity.entities import Mobile
 
 class FooForm(Mobile):
     modifiers = {}
+    ent_id = None
 
     def _apply_modifiers_to(self, stat: str):
         if not hasattr(self, stat):
