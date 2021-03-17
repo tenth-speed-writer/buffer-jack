@@ -1,43 +1,51 @@
 import numpy as np
 from typing import Callable
+from src.map_gen.map_generator import MapGenerator
 from src.map_gen.drunk_brush import DrunkBrush, SlightlyCenterMindedArtist, CenterMindedArtist, \
     VeryCenterMindedArtist, brush_plus, brush_2x2
 from copy import deepcopy
+from random import randrange, random
 
 
 def _trim(x: int, y: int,
-          field: np.ndarray,
-          room_cells: np.ndarray):
+          field: np.ndarray):
     """
     :param field: The boolean map of wall tiles
-    :param room_cells: Which of the cells in `field` are also room cells
     """
-    width, height = field.shape
-    this_cell = field[y, x]
+    height, width = field.shape
+    this_cell = bool(field[y, x])
 
-    if this_cell:
+    if this_cell is True:
         # If this cell is a wall (True), check if it's fully surrounded.
 
         # Define a map of position deltas to the 8 surrounding tiles
-        deltas = [(-1, -1), (-1, 0), (-1, 1),
-                  (0, -1), (0, 1),
-                  (1, -1), (1, 0), (1, 1)]
+        deltas = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 
         # Gather the truth values of those cells
-        neighbors = [field[y + dy,
-                           x + dx]
+        neighbors = [(x+dx, y+dy)
                      for dx, dy in deltas
                      if 0 <= y + dy < height and 0 <= x + dx < width]
 
-        if sum(neighbors) == 8:
-            # If it's completely surrounded, return that we should falsify it.
-            return x, y, False
-        else:
-            borders_a_room = False
-            for x_, y_ in neighbors:
-                if room_cells[y_, x_] is True:
-                    borders_a_room
+        neighbor_is_room = False in [bool(field[y, x]) for x, y in neighbors]
+
+        if neighbor_is_room:
             return x, y, True
+        else:
+            return x, y, False
+
+        # neighbor_truths = [field[y_, x_]
+        #                    for x_, y_ in neighbors]
+        #
+        # if sum(neighbor_truths) == 8:
+        #     # If it's completely surrounded, return that we should falsify it.
+        #     return x, y, False
+        #
+        # else:
+        #     # If it's not completely surrounded but doesn't border a room, trim that too.
+        #     if True in neighbor_is_room:
+        #         return x, y, True
+        #     else:
+        #         return x, y, False
 
     else:
         # If this cell wasn't a wall to begin with, just return its position and False.
@@ -52,7 +60,9 @@ class Cellophane:
 
     def generate(self):
         self.room_gen.generate()
-        self._room_map = deepcopy(self.room_gen.bool_map)
+
+        # The room map will be True for every False in the freshly-generated bool_map.
+        self._room_map = np.logical_not(self.room_gen.bool_map)
 
     def render_on(self, dx: int, dy: int, field: np.ndarray):
         pass
@@ -68,7 +78,7 @@ class Cellophane:
     def room_map(self):
         """Returns a boolean array of the tiles originally marked as False, to be referenced after trimming things."""
         if self._room_map is None:
-            raise Exception("Called the room_bool_map of a cellophane whose generator has not yet run!")
+            raise Exception("Called the .room_map of a cellophane whose generator has not yet been run!")
         else:
             return self._room_map
 
@@ -81,22 +91,28 @@ class Cellophane:
 
         # Establish points to be checked, which should be all but the edge cells.
         # May this be the most Pythonic thing I write, ever.
-        points_to_check = sum([[(x, y, trimmable)
-                                for x in range(1, width - 1)]
-                               for y in range(1, height - 1)],
-                              [])
+        points_to_check = []
+        for y in range(0, height):
+            for x in range(0, width):
+                points_to_check.append((x, y, trimmable))
 
         # Spin up a pool with 1 process per available CPU
         pool = mp.Pool(mp.cpu_count())
 
         # Delegate out the point-check logic
-        trimmed = pool.starmap(_trim, points_to_check)
+        # print(points_to_check)
+        trimmed = pool.starmap(func=_trim, iterable=points_to_check)
+
         pool.close()
 
         # Recombine the deltas into the working copy of the map, then return it.
         for x, y, truth in trimmed:
             trimmable[y, x] = truth
 
+        # Update the bool_map, which will now be distinct from the inverse of the room map.
+        self.room_gen.bool_map = trimmable
+
+        # Return it
         return trimmable
 
 
@@ -105,17 +121,17 @@ class SmallDrunkArtistCellophane(Cellophane):
     def __room_generator(width, height):
         return DrunkBrush(width=width,
                           height=height,
-                          target_fullness=.55,
-                          drunk_add_prob=.25,
-                          drunk_die_prob=.05,
-                          drunk_same_path_prob=0.45,
+                          target_fullness=.5 + .25*random(),
+                          drunk_add_prob=.25 + .2*random(),
+                          drunk_die_prob=.025 + .075*random(),
+                          drunk_same_path_prob=.015 + .03*random(),
                           artist_class=CenterMindedArtist)
 
     def __init__(self):
         super().__init__(width=15, height=15,
                          room_generator=self.__room_generator)
 
-        self.room_gen.generate()
+        self.generate()
         self.room_gen.apply_automata_smoothing(survive_range=(4, 5, 6, 7, 8),
                                                born_range=(5, 6, 7, 8))
 
@@ -134,9 +150,9 @@ if __name__ == "__main__":
 
     for row in foo.room_gen.as_string_rows():
         print(row)
-
-    foo.room_gen.bool_map = foo.trim()
     print("\n")
+
+    foo.trim()
 
     for row in foo.room_gen.as_string_rows():
         print(row)
