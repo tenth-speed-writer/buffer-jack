@@ -66,7 +66,7 @@ class Entity:
     def playfield(self, pf):
         """Sets the object's new playfield, assuming it passes some ducktype testing."""
 
-        # Simple test since we're limited by a circular import reference and can't use true type hinting. :(
+        # Simple tests since we're limited by a circular import reference and can't use true type hinting. :(
         assert hasattr(pf, "_field")
         self._parent_playfield = pf
 

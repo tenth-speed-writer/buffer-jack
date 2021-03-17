@@ -116,7 +116,7 @@ class MapGenerator:
 
     def _generate_if_necessary(self):
         """A utility method called when something needs to access this generator's map but it hasn't been generated."""
-        if not self.bool_map:
+        if self.bool_map is None:
             self.bool_map = self.generate()
 
     def as_string_rows(self,

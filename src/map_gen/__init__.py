@@ -1,3 +1,3 @@
-__all__ = ["Room"]
+__all__ = ["MapGenerator"]
 
-from .room import Room
+from .map_generator import MapGenerator
