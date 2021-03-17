@@ -4,6 +4,10 @@ from typing import Tuple, List
 import numpy as np
 from math import floor, sqrt
 from random import random, sample, randint, choices
+from time import time_ns
+
+# In the words of Jaq: "oh boy here we go."
+import multiprocessing as mp
 
 # Includes x,y as well as 1 orthogonal step in each direction
 brush_plus = ((-1, 0),
@@ -20,6 +24,45 @@ brush_2x2 = ((0, 0),
 brush_3x3 = ((0, 0), (0, 1), (0, 2),
              (1, 0), (1, 1), (1, 2),
              (2, 0), (2, 1), (2, 2))
+
+
+def decide_fate(x: int, y: int,
+                width: int, height: int,
+                field: np.ndarray,
+                survive_range: Tuple,
+                born_range: Tuple) -> Tuple[int, int, bool]:
+    # Determine what's adjacent to this specific cell
+    adjacents_positions = []
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            # Don't test this exact cell
+            if not (dx == 0 and dy == 0):
+                x_is_valid = 0 <= x + dx < width
+                y_is_valid = 0 <= y + dy < height
+
+                if x_is_valid and y_is_valid:
+                    adjacents_positions.append((x + dx,
+                                                y + dy))
+    adjacents = [field[y, x] for x, y in adjacents_positions]
+    num_living_neighbors = sum(adjacents)
+    is_alive = field[y, x]
+
+    if len(adjacents) < 8:
+        # If it's a map edge cell, just mark it True
+        return x, y, True
+
+    else:
+        if is_alive and num_living_neighbors not in survive_range:
+            # If it's alive and not enough neighbors, kill it
+            return x, y, False
+
+        elif num_living_neighbors in born_range:
+            # If it's not alive and has enough neighbors, birth it
+            return x, y, True
+
+        else:
+            # Otherwise, leave it as it was
+            return x, y, is_alive
 
 
 class DrunkArtist:
@@ -134,7 +177,7 @@ class CenterMindedArtist(DrunkArtist):
                  field: np.ndarray,
                  brush=(0, 0),
                  same_path_prob=0,
-                 center_weight=0.35,
+                 center_weight=0.55,
                  not_center_weight=0.2):
         super().__init__(x0=x0, y0=y0,
                          field=field,
@@ -182,6 +225,24 @@ class CenterMindedArtist(DrunkArtist):
         self.apply_brush()
 
 
+class VeryCenterMindedArtist(CenterMindedArtist):
+    def __init__(self, x0: int, y0: int,
+                 field,
+                 same_path_prob: float,
+                 brush=((0, 0),),
+                 center_weight=.85):
+        super().__init__(x0, y0, field, brush, same_path_prob, center_weight)
+
+
+class SlightlyCenterMindedArtist(CenterMindedArtist):
+    def __init__(self, x0: int, y0: int,
+                 field,
+                 same_path_prob: float,
+                 brush=((0, 0),),
+                 center_weight=.35):
+        super().__init__(x0, y0, field, brush, same_path_prob, center_weight)
+
+
 class DrunkBrush(MapGenerator):
     """Generates a map by running one or more (spawned) drunk walkers through a full field,
     clearing tiles as they go until the map has reached a certain percentage of openness."""
@@ -223,45 +284,28 @@ class DrunkBrush(MapGenerator):
         return trues / total
 
     def apply_automata_smoothing(self,
-                                 survive_range: Tuple[int] = (4, 5, 6, 7, 8),
-                                 born_range: Tuple[int] = (5, 6, 7, 8)):
+                                 survive_range: Tuple = (4, 5, 6, 7, 8),
+                                 born_range: Tuple = (5, 6, 7, 8)):
         next_field = deepcopy(self.field)
 
-        def decide_fate(x, y):
-            # Determine what's adjacent to this specific cell
-            adjacents_positions = []
-            for dx in (-1, 0, 1):
-                for dy in (-1, 0, 1):
-                    # Don't test this exact cell
-                    if not (dx == 0 and dy == 0):
-                        x_is_valid = 0 <= x + dx < self.width
-                        y_is_valid = 0 <= y + dy < self.height
-
-                        if x_is_valid and y_is_valid:
-                            adjacents_positions.append((x + dx,
-                                                        y + dy))
-            adjacents = [self.field[y, x] for x, y in adjacents_positions]
-            num_living_neighbors = sum(adjacents)
-            is_alive = self.field[y, x]
-
-            if len(adjacents) < 8:
-                # If it's a map edge cell, just mark it True
-                next_field[y, x] = True
-
-            else:
-                # Otherwise, if it's alive, decide whether to kill this cell.
-                if is_alive:
-                    if num_living_neighbors not in survive_range:
-                        next_field[y, x] = False
-
-                # And if it's not alive, decide whether to birth this cell.
-                else:
-                    if num_living_neighbors in born_range:
-                        next_field[y, x] = True
-
+        cells_to_decide_fate = []
         for y_ in range(0, self.height):
             for x_ in range(0, self.width):
-                decide_fate(x_, y_)
+                cells_to_decide_fate.append((x_, y_))
+
+        fate_arguments = [(x, y, self.width, self.height, self.field, survive_range, born_range)
+                          for x, y in cells_to_decide_fate]
+
+        # HNNNNNNNNNNNG here we go
+        # Create a pool with 1 process per available CPU
+        fate_decision_pool = mp.Pool(processes=mp.cpu_count())
+
+        # Delegate out decide_fate calls to each x, y in cells_to_decide_fate
+        decisions = fate_decision_pool.starmap(decide_fate, fate_arguments)
+        fate_decision_pool.close()
+
+        for x, y, truth in decisions:
+            next_field[y, x] = truth
 
         self.field = next_field
 
@@ -270,15 +314,15 @@ class DrunkBrush(MapGenerator):
             self.bool_map = next_field
 
     def generate(self) -> np.ndarray:
-        if self.bool_map:
+        if self.bool_map is not None:
             return self.bool_map
 
         else:
             # Initialize our list of drunk artists with one situated at a random place on the map.
-            artists = [self.artist_class(x0=randint(floor(.35 * self.width),
-                                                    floor(.65 * self.width)),
-                                         y0=randint(floor(.35 * self.height),
-                                                    floor(.65 * self.height)),
+            artists = [self.artist_class(x0=randint(floor(.45 * self.width),
+                                                    floor(.55 * self.width)),
+                                         y0=randint(floor(.45 * self.height),
+                                                    floor(.55 * self.height)),
                                          field=self.field,
                                          same_path_prob=self._same_path_prob,
                                          brush=self.brush)]
@@ -319,37 +363,35 @@ class DrunkBrush(MapGenerator):
             return self.bool_map
 
 
-gen = DrunkBrush(width=40, height=35, target_fullness=0.45,
-                 drunk_same_path_prob=.15,
-                 drunk_add_prob=.015,
-                 drunk_die_prob=.0075,
-                 brush=brush_2x2,
-                 artist_class=CenterMindedArtist)
+if __name__ == "__main__":
+    mp.freeze_support()
 
-for row in gen.as_string_rows():
-    print(row)
-print("\n")
+    start_time = time_ns() / 1e6
+    gen = DrunkBrush(width=30, height=30, target_fullness=0.65,
+                     drunk_same_path_prob=.25,
+                     drunk_add_prob=.45,
+                     drunk_die_prob=.10,
+                     artist_class=CenterMindedArtist,
+                     brush=brush_plus)
 
-gen.apply_automata_smoothing()
+    for row in gen.as_string_rows():
+        print(row)
+    print("\n")
 
-for row in gen.as_string_rows():
-    print(row)
-print("\n")
+    gen.apply_automata_smoothing(survive_range=(3, 4, 5, 6, 7, 8),
+                                 born_range=(4, 5, 6, 7, 8))
 
+    for row in gen.as_string_rows():
+        print(row)
+    print("\n")
 
-gen.apply_automata_smoothing()
+    # gen.apply_automata_smoothing(survive_range=(4, 5, 6, 7, 8),
+    #                              born_range=(5, 6, 7, 8))
+    #
+    # for row in gen.as_string_rows():
+    #     print(row)
+    # print("\n")
 
-for row in gen.as_string_rows():
-    print(row)
-print("\n")
+    end_time = time_ns() / 1e6
 
-gen.apply_automata_smoothing()
-
-for row in gen.as_string_rows():
-    print(row)
-print("\n")
-
-gen.apply_automata_smoothing()
-
-for row in gen.as_string_rows():
-    print(row)
+    print("Process took {} milliseconds.".format(str(end_time - start_time).split(".")[0]))

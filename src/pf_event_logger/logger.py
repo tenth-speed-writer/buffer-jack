@@ -157,3 +157,5 @@ class PFEventLogger:
 
 mem_db = sqlite3.connect(":memory:")
 _initialize_pf_db(mem_db.cursor())
+
+import numpy as np
