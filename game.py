@@ -7,6 +7,7 @@ from src.menus import Menu, MenuOption
 from src.sigil import Sigil
 from math import floor
 from time import time_ns
+import multiprocessing as mp
 
 # TODO: Move these to a config file
 WIDTH, HEIGHT = 1080, 768
@@ -26,6 +27,9 @@ def __time_ms():
 
 
 def main():
+    # Make the multiprocessing logic used in the modules happy.
+    mp.freeze_support()
+
     # Load the tileset and context
     tileset = tcod.tileset.load_tilesheet("tilesets/yayo_c64_16x16.png", 16, 16,
                                           charmap=tcod.tileset.CHARMAP_CP437)
@@ -78,8 +82,8 @@ def main():
 
         # print(interface.playfield.get_cell(12, 12).sigils)
         interface.new_game_log(height=10, width=40)
-        interface.print_to_log("This is a log test!", color=(25, 250, 25))
-        interface.print_to_log("This is an exceptionally long log test so we can see how well it handles multiples of these.")
+        interface.print_to_log("This is a log tests!", color=(25, 250, 25))
+        interface.print_to_log("This is an exceptionally long log tests so we can see how well it handles multiples of these.")
         interface.print_to_log("This is another line.")
         interface.print_to_log("This is yet another line.")
         interface.print_to_log("This should bump the first line off of the screen.")
@@ -106,7 +110,7 @@ def main():
     menu.add_option(MenuOption(text="Because we, ah...",
                                width=24, height=5,
                                on_select=lambda x: print("Did more nothing!")))
-    menu.add_option(MenuOption(text="Need to test something",
+    menu.add_option(MenuOption(text="Need to tests something",
                                width=24, height=5,
                                on_select=lambda x: print("Did more nothing!")))
     menu.add_option(MenuOption(text="You know, uh...",
