@@ -43,7 +43,7 @@ class MapGenerator:
 
         self.bool_map: Optional[np.ndarray] = None
 
-        if initial:
+        if initial is not None:
             # If an initial array is provided, assert its shape and use that.
             if initial.shape == self.shape:
                 self._initial = initial
