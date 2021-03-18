@@ -1,10 +1,9 @@
 import numpy as np
 from typing import Callable
-from src.map_gen.map_generator import MapGenerator
 from src.map_gen.drunk_brush import DrunkBrush, SlightlyCenterMindedArtist, CenterMindedArtist, \
-    VeryCenterMindedArtist, brush_plus, brush_2x2
+    VerySlightlyCenterMindedArtist, brush_plus, brush_2x2, DrunkArtist
 from copy import deepcopy
-from random import randrange, random
+from random import random
 
 
 def _trim(x: int, y: int,
@@ -53,6 +52,7 @@ def _trim(x: int, y: int,
 
 
 class Cellophane:
+    grid_shape = [0, 0]
     _room_map = None
 
     def __init__(self, width: int, height: int, room_generator: Callable):
@@ -64,8 +64,9 @@ class Cellophane:
         # The room map will be True for every False in the freshly-generated bool_map.
         self._room_map = np.logical_not(self.room_gen.bool_map)
 
-    def render_on(self, dx: int, dy: int, field: np.ndarray):
-        pass
+    def render_on(self, x0: int, y0: int, field: np.ndarray):
+        x_i, y_i = [dim - 1 for dim in self.room_gen.shape]
+        field[range(y0, y_i), range(x0, x_i)] = self.bool_map
 
     @property
     def bool_map(self):
@@ -117,6 +118,7 @@ class Cellophane:
 
 
 class SmallDrunkArtistCellophane(Cellophane):
+    grid_shape = (1, 1)
     @staticmethod
     def __room_generator(width, height):
         return DrunkBrush(width=width,
@@ -138,21 +140,66 @@ class SmallDrunkArtistCellophane(Cellophane):
         self.field = deepcopy(self.bool_map)
 
 
+class MediumDrunkArtistCellophane(Cellophane):
+    grid_shape = (2, 2)
+
+    @staticmethod
+    def __room_generator(width, height):
+        return DrunkBrush(width=width,
+                          height=height,
+                          target_fullness=.35 + .10*random(),
+                          drunk_add_prob=.35 + .2*random(),
+                          drunk_die_prob=.05 + .075*random(),
+                          drunk_same_path_prob=.55,
+                          artist_class=SlightlyCenterMindedArtist)
+
+    def __init__(self):
+        super().__init__(width=30, height=30,
+                         room_generator=self.__room_generator)
+
+        self.generate()
+        self.room_gen.apply_automata_smoothing(survive_range=(4, 5, 6, 7, 8),
+                                               born_range=(5, 6, 7, 8))
+
+        self.field = deepcopy(self.bool_map)
+
+
+class LargeDrunkArtistCellophane(Cellophane):
+    grid_shape = (3, 3)
+
+    @staticmethod
+    def __room_generator(width, height):
+        return DrunkBrush(width=width,
+                          height=height,
+                          target_fullness=.35 + .10*random(),
+                          drunk_add_prob=.15 + .05*random(),
+                          drunk_die_prob=.05 + .075*random(),
+                          drunk_same_path_prob=.35,
+                          artist_class=VerySlightlyCenterMindedArtist,
+                          brush=brush_plus)
+
+    def __init__(self):
+        super().__init__(width=45, height=45,
+                         room_generator=self.__room_generator)
+
+        self.generate()
+        self.room_gen.apply_automata_smoothing(survive_range=(4, 5, 6, 7, 8),
+                                               born_range=(5, 6, 7, 8))
+
+        self.field = deepcopy(self.bool_map)
+
+
 if __name__ == "__main__":
     import multiprocessing as mp
 
     mp.freeze_support()
 
-    foo = SmallDrunkArtistCellophane()
+    foo = LargeDrunkArtistCellophane()
     foo.room_gen.generate()
     foo.room_gen.apply_automata_smoothing(survive_range=(4, 5, 6, 7, 8),
                                           born_range=(5, 6, 7, 8))
 
+    foo.trim()
     for row in foo.room_gen.as_string_rows():
         print(row)
     print("\n")
-
-    foo.trim()
-
-    for row in foo.room_gen.as_string_rows():
-        print(row)

@@ -17,7 +17,7 @@ def make_wall():
                   passable=False)
 
 
-class MapGenerator:
+class RoomGenerator:
     def initial_map(self) -> np.ndarray:
         """By default, initialize with a solid block of Trues.
         Override to add different default initial seeds."""

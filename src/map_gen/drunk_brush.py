@@ -1,4 +1,4 @@
-from src.map_gen.map_generator import MapGenerator
+from src.map_gen.room_generator import RoomGenerator
 from copy import deepcopy
 from typing import Tuple, List
 import numpy as np
@@ -243,7 +243,16 @@ class SlightlyCenterMindedArtist(CenterMindedArtist):
         super().__init__(x0, y0, field, brush, same_path_prob, center_weight)
 
 
-class DrunkBrush(MapGenerator):
+class VerySlightlyCenterMindedArtist(CenterMindedArtist):
+    def __init__(self, x0: int, y0: int,
+                 field,
+                 same_path_prob: float,
+                 brush=((0, 0),),
+                 center_weight=.3):
+        super().__init__(x0, y0, field, brush, same_path_prob, center_weight)
+
+
+class DrunkBrush(RoomGenerator):
     """Generates a map by running one or more (spawned) drunk walkers through a full field,
     clearing tiles as they go until the map has reached a certain percentage of openness."""
 
